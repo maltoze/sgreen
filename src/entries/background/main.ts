@@ -7,15 +7,17 @@ chrome.action.onClicked.addListener(async (tab) => {
   )
 
   // If an offscreen document is not already open, create one.
+  console.log(offscreenDocument, '---------')
   if (!offscreenDocument) {
     // Create an offscreen document.
     await chrome.offscreen.createDocument({
-      url: 'offscreen.html',
+      url: '/src/entries/background/offscreen.html',
       reasons: ['USER_MEDIA'],
       justification: 'Recording from chrome.tabCapture API',
     })
   } else {
     recording = offscreenDocument.documentUrl.endsWith('#recording')
+    console.log('recording', recording, offscreenDocument.documentUrl)
   }
 
   if (recording) {
@@ -23,7 +25,7 @@ chrome.action.onClicked.addListener(async (tab) => {
       type: 'stop-recording',
       target: 'offscreen',
     })
-    chrome.action.setIcon({ path: 'icons/not-recording.png' })
+    chrome.action.setIcon({ path: '/icon.png' })
     return
   }
 
@@ -39,5 +41,5 @@ chrome.action.onClicked.addListener(async (tab) => {
     data: streamId,
   })
 
-  chrome.action.setIcon({ path: '/icons/recording.png' })
+  chrome.action.setIcon({ path: '/icon.png' })
 })

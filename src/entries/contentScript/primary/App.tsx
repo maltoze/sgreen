@@ -16,7 +16,7 @@ import {
   TooltipTrigger,
 } from '~/components/ui/tooltip'
 
-type RecordMode = 'select' | 'full-window' | 'full-screen' | 'app'
+type RecordMode = 'area' | 'full-window' | 'full-screen' | 'app'
 
 function App() {
   const [recordMode, setRecordMode] = useState<RecordMode | null>(null)
@@ -27,7 +27,7 @@ function App() {
   function handleSelectArea() {
     setBeginPos(null)
     setEndPos(null)
-    setRecordMode((prevMode) => (prevMode === 'select' ? null : 'select'))
+    setRecordMode((prevMode) => (prevMode === 'area' ? null : 'area'))
   }
 
   function handleStageMouseDown(e: Konva.KonvaEventObject<MouseEvent>) {
@@ -73,7 +73,7 @@ function App() {
 
   return (
     <>
-      {recordMode === 'select' && (
+      {recordMode === 'area' && (
         <Stage
           width={window.innerWidth}
           height={window.innerHeight}
@@ -104,17 +104,16 @@ function App() {
           </Layer>
         </Stage>
       )}
-      <div className="fixed bottom-4 left-4 z-[2147483647] flex space-x-2 rounded-xl bg-green-100 p-2 text-slate-950 shadow-md">
+      <div className="fixed bottom-4 left-4 z-[2147483647] flex space-x-2 rounded-xl bg-green-100/30 p-2 text-slate-950 shadow-md backdrop-blur">
         <div className="flex space-x-2">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="outline" size="sm" onClick={handleSelectArea}>
                   <EnterFullScreenIcon
-                    className={clsx(
-                      'h-4 w-4',
-                      recordMode === 'select' ? 'stroke-green-500' : '',
-                    )}
+                    className={clsx('h-4 w-4', {
+                      'stroke-green-500': recordMode === 'area',
+                    })}
                   />
                 </Button>
               </TooltipTrigger>

@@ -13,10 +13,10 @@ chrome.runtime.onMessage.addListener(async (message) => {
   }
 })
 
-let recorder
-let data = []
+let recorder: MediaRecorder | undefined
+let data: Blob[] = []
 
-async function startRecording(streamId) {
+async function startRecording(streamId: string) {
   if (recorder?.state === 'recording') {
     throw new Error('Called startRecording while recording is in progress.')
   }
@@ -45,7 +45,7 @@ async function startRecording(streamId) {
   recorder = new MediaRecorder(media, { mimeType: 'video/webm' })
   recorder.ondataavailable = (event) => data.push(event.data)
   recorder.onstop = () => {
-    const blob = new Blob(data, { type: 'video/webm' })
+    const blob = new Blob(data, { type: 'video/mp4' })
     window.open(URL.createObjectURL(blob), '_blank')
 
     // Clear state ready for next recording
@@ -64,10 +64,10 @@ async function startRecording(streamId) {
 }
 
 async function stopRecording() {
-  recorder.stop()
+  recorder?.stop()
 
   // Stopping the tracks makes sure the recording icon in the tab is removed.
-  recorder.stream.getTracks().forEach((t) => t.stop())
+  recorder?.stream.getTracks().forEach((t) => t.stop())
 
   // Update current state in URL
   window.location.hash = ''
