@@ -1,4 +1,18 @@
-async function startRecording_(tab: chrome.tabs.Tab, data) {
+let streamId: string
+
+chrome.action.onClicked.addListener(async (tab) => {
+  // Get a MediaStream for the active tab.
+  chrome.tabCapture.getMediaStreamId(
+    {
+      targetTabId: tab.id,
+    },
+    async (streamId_) => {
+      streamId = streamId_
+    },
+  )
+})
+
+async function startRecording_(data) {
   // https://developer.chrome.com/docs/extensions/reference/offscreen/#before-chrome-116-check-if-an-offscreen-document-is-open
   const existingContexts = await chrome.runtime.getContexts({})
   let recording = false
@@ -23,15 +37,9 @@ async function startRecording_(tab: chrome.tabs.Tab, data) {
     chrome.runtime.sendMessage({
       type: 'stop-recording',
       target: 'offscreen',
-      data,
     })
     return
   }
-
-  // Get a MediaStream for the active tab.
-  const streamId = await chrome.tabCapture.getMediaStreamId({
-    targetTabId: tab.id,
-  })
 
   // Send the stream ID to the offscreen document to start recording.
   chrome.runtime.sendMessage({
@@ -54,7 +62,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
       })
       break
     case 'start-recording':
-      sender.tab && startRecording_(sender.tab, message.data)
+      sender.tab && startRecording_(message.data)
       break
   }
 })

@@ -32,9 +32,9 @@ async function startRecording({ streamId, width, height }) {
       mandatory: {
         chromeMediaSource: 'tab',
         chromeMediaSourceId: streamId,
+        maxWidth: width,
+        maxHeight: height,
       },
-      width: { ideal: width },
-      height: { ideal: height },
     },
   })
 
