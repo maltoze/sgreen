@@ -1,4 +1,5 @@
-chrome.action.onClicked.addListener(async (tab) => {
+async function startRecording_(tab: chrome.tabs.Tab, data) {
+  // https://developer.chrome.com/docs/extensions/reference/offscreen/#before-chrome-116-check-if-an-offscreen-document-is-open
   const existingContexts = await chrome.runtime.getContexts({})
   let recording = false
 
@@ -7,7 +8,6 @@ chrome.action.onClicked.addListener(async (tab) => {
   )
 
   // If an offscreen document is not already open, create one.
-  console.log(offscreenDocument, '---------')
   if (!offscreenDocument) {
     // Create an offscreen document.
     await chrome.offscreen.createDocument({
@@ -17,15 +17,14 @@ chrome.action.onClicked.addListener(async (tab) => {
     })
   } else {
     recording = offscreenDocument.documentUrl.endsWith('#recording')
-    console.log('recording', recording, offscreenDocument.documentUrl)
   }
 
   if (recording) {
     chrome.runtime.sendMessage({
       type: 'stop-recording',
       target: 'offscreen',
+      data,
     })
-    chrome.action.setIcon({ path: '/icon.png' })
     return
   }
 
@@ -38,8 +37,24 @@ chrome.action.onClicked.addListener(async (tab) => {
   chrome.runtime.sendMessage({
     type: 'start-recording',
     target: 'offscreen',
-    data: streamId,
+    data: { streamId, ...data },
   })
+}
 
-  chrome.action.setIcon({ path: '/icon.png' })
+chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+  if (message.target !== 'background') {
+    return
+  }
+  switch (message.type) {
+    case 'recording-complete':
+      chrome.tabs.create({
+        url: `/src/entries/tabs/main.html?videoUrl=${encodeURIComponent(
+          message.videoUrl,
+        )}`,
+      })
+      break
+    case 'start-recording':
+      sender.tab && startRecording_(sender.tab, message.data)
+      break
+  }
 })

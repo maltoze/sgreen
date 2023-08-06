@@ -64,7 +64,16 @@ function App() {
   const selectAreaX = endPos && beginPos ? Math.min(endPos?.x, beginPos?.x) : 0
   const selectAreaY = endPos && beginPos ? Math.min(endPos?.y, beginPos?.y) : 0
 
-  async function handleStart() {}
+  async function handleStart() {
+    chrome.runtime.sendMessage({
+      type: 'start-recording',
+      target: 'background',
+      data: {
+        width: window.innerWidth,
+        height: window.innerHeight,
+      },
+    })
+  }
 
   function handleStageOnContextMenu(e: Konva.KonvaEventObject<MouseEvent>) {
     e.evt.preventDefault()

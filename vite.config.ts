@@ -12,7 +12,7 @@ export default defineConfig(() => {
       webExtension({
         manifest: getManifest(),
         additionalInputs: {
-          html: ['src/entries/background/offscreen.html'],
+          html: ['src/entries/background/offscreen.html', 'src/entries/tabs/main.html'],
         },
       }),
     ],

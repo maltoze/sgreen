@@ -16,7 +16,7 @@ chrome.runtime.onMessage.addListener(async (message) => {
 let recorder: MediaRecorder | undefined
 let data: Blob[] = []
 
-async function startRecording(streamId: string) {
+async function startRecording({ streamId, width, height }) {
   if (recorder?.state === 'recording') {
     throw new Error('Called startRecording while recording is in progress.')
   }
@@ -33,6 +33,8 @@ async function startRecording(streamId: string) {
         chromeMediaSource: 'tab',
         chromeMediaSourceId: streamId,
       },
+      width: { ideal: width },
+      height: { ideal: height },
     },
   })
 
@@ -46,8 +48,12 @@ async function startRecording(streamId: string) {
   recorder.ondataavailable = (event) => data.push(event.data)
   recorder.onstop = () => {
     const blob = new Blob(data, { type: 'video/mp4' })
-    window.open(URL.createObjectURL(blob), '_blank')
-
+    const videoUrl = URL.createObjectURL(blob)
+    chrome.runtime.sendMessage({
+      type: 'recording-complete',
+      target: 'background',
+      videoUrl,
+    })
     // Clear state ready for next recording
     recorder = undefined
     data = []
