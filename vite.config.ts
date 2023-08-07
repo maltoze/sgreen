@@ -9,10 +9,23 @@ export default defineConfig(() => {
   return {
     plugins: [
       react(),
+      {
+        name: 'p',
+        configurePreviewServer(server) {
+          server.middlewares.use((req, res, next) => {
+            res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
+            res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp')
+            next()
+          })
+        },
+      },
       webExtension({
         manifest: getManifest(),
         additionalInputs: {
-          html: ['src/entries/background/offscreen.html', 'src/entries/tabs/main.html'],
+          html: [
+            'src/entries/background/offscreen.html',
+            'src/entries/tabs/main.html',
+          ],
         },
       }),
     ],
@@ -20,6 +33,10 @@ export default defineConfig(() => {
       alias: {
         '~': path.resolve(__dirname, './src'),
       },
+    },
+    build: {
+      minify: false,
+      sourcemap: true,
     },
   }
 })

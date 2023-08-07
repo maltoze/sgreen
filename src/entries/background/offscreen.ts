@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+
+import { openDB } from 'idb'
+import { RecordingOptions } from '~/types'
+
 chrome.runtime.onMessage.addListener(async (message) => {
   if (message.target === 'offscreen') {
     switch (message.type) {
@@ -16,19 +21,26 @@ chrome.runtime.onMessage.addListener(async (message) => {
 let recorder: MediaRecorder | undefined
 let data: Blob[] = []
 
-async function startRecording({ streamId, width, height }) {
+async function startRecording({
+  streamId,
+  width,
+  height,
+  recordingId,
+}: RecordingOptions) {
   if (recorder?.state === 'recording') {
     throw new Error('Called startRecording while recording is in progress.')
   }
 
   const media = await navigator.mediaDevices.getUserMedia({
     audio: {
+      // @ts-ignore
       mandatory: {
         chromeMediaSource: 'tab',
         chromeMediaSourceId: streamId,
       },
     },
     video: {
+      // @ts-ignore
       mandatory: {
         chromeMediaSource: 'tab',
         chromeMediaSourceId: streamId,
@@ -46,17 +58,34 @@ async function startRecording({ streamId, width, height }) {
   // Start recording.
   recorder = new MediaRecorder(media, { mimeType: 'video/webm' })
   recorder.ondataavailable = (event) => data.push(event.data)
-  recorder.onstop = () => {
-    const blob = new Blob(data, { type: 'video/mp4' })
-    const videoUrl = URL.createObjectURL(blob)
+  recorder.onstop = async () => {
+    const db = await openDB('sgreen', 3, {
+      upgrade(db) {
+        db.createObjectStore('recordings', {
+          keyPath: 'id',
+        })
+      },
+    })
+    const tx = db.transaction('recordings', 'readwrite')
+    await tx.store.add({
+      data,
+      id: recordingId,
+      type: 'video/webm',
+      created: Date.now(),
+    })
+    await tx.done
+    db.close()
+
     chrome.runtime.sendMessage({
       type: 'recording-complete',
       target: 'background',
-      videoUrl,
     })
     // Clear state ready for next recording
     recorder = undefined
     data = []
+  }
+  recorder.onerror = (event) => {
+    console.error('MediaRecorder error:', event)
   }
   recorder.start()
 

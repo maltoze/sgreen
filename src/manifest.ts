@@ -26,6 +26,15 @@ const manifest: Partial<chrome.runtime.ManifestV3> = {
     open_in_tab: true,
   },
   permissions: ['tabCapture', 'activeTab', 'offscreen'],
+  cross_origin_embedder_policy: {
+    value: 'require-corp',
+  },
+  cross_origin_opener_policy: {
+    value: 'same-origin',
+  },
+  // content_security_policy: {
+  //   extension_pages: "script-src 'self' 'wasm-unsafe-eval' 'wasm-eval'; object-src 'self';",
+  // },
 }
 
 export function getManifest(): chrome.runtime.ManifestV3 {
