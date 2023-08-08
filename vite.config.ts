@@ -9,16 +9,6 @@ export default defineConfig(() => {
   return {
     plugins: [
       react(),
-      {
-        name: 'p',
-        configurePreviewServer(server) {
-          server.middlewares.use((req, res, next) => {
-            res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
-            res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp')
-            next()
-          })
-        },
-      },
       webExtension({
         manifest: getManifest(),
         additionalInputs: {
@@ -34,9 +24,8 @@ export default defineConfig(() => {
         '~': path.resolve(__dirname, './src'),
       },
     },
-    build: {
-      minify: false,
-      sourcemap: true,
-    },
+    server: {
+      port: 4173,
+    }
   }
 })

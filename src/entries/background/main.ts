@@ -5,7 +5,11 @@ let dockVisible = false
 
 chrome.action.onClicked.addListener(async (tab) => {
   if (dockVisible) {
-    tab.id && chrome.tabs.sendMessage(tab.id, { type: 'hide-dock' })
+    // tab.id && chrome.tabs.sendMessage(tab.id, { type: 'hide-dock' })
+    chrome.runtime.sendMessage({
+      type: 'stop-recording',
+      target: 'offscreen',
+    })
     dockVisible = false
   } else {
     tab.id && chrome.tabs.sendMessage(tab.id, { type: 'show-dock' })
@@ -34,7 +38,7 @@ async function startRecording(data: Partial<RecordingOptions>) {
   })
 }
 
-let recordingId: string
+let recordingId: string | null = null
 
 chrome.runtime.onMessage.addListener(async (message, sender, _sendResponse) => {
   if (message.target !== 'background') {
@@ -42,9 +46,13 @@ chrome.runtime.onMessage.addListener(async (message, sender, _sendResponse) => {
   }
   switch (message.type) {
     case 'recording-complete':
-      chrome.tabs.create({
-        url: `/src/entries/tabs/main.html?recordingId=${encodeURIComponent(recordingId)}`,
-      })
+      chrome.offscreen.closeDocument()
+      recordingId &&
+        chrome.tabs.create({
+          url: `/src/entries/tabs/main.html?recordingId=${encodeURIComponent(
+            recordingId,
+          )}`,
+        })
       break
     case 'start-recording':
       recordingId = message.data.recordingId
