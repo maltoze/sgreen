@@ -1,18 +1,25 @@
 import { RecordingOptions } from '~/types'
 
 let streamId: string
+let recording = false
 let dockVisible = false
 
 chrome.action.onClicked.addListener(async (tab) => {
   if (dockVisible) {
-    // tab.id && chrome.tabs.sendMessage(tab.id, { type: 'hide-dock' })
+    tab.id && chrome.tabs.sendMessage(tab.id, { type: 'hide-dock' })
+    dockVisible = false
+  } else {
+    tab.id && chrome.tabs.sendMessage(tab.id, { type: 'show-dock' })
+    dockVisible = true
+  }
+
+  if (recording) {
     chrome.runtime.sendMessage({
       type: 'stop-recording',
       target: 'offscreen',
     })
-    dockVisible = false
+    recording = false
   } else {
-    tab.id && chrome.tabs.sendMessage(tab.id, { type: 'show-dock' })
     chrome.tabCapture.getMediaStreamId(
       {
         targetTabId: tab.id,
@@ -21,11 +28,14 @@ chrome.action.onClicked.addListener(async (tab) => {
         streamId = streamId_
       },
     )
-    dockVisible = true
   }
 })
 
-async function startRecording(data: Partial<RecordingOptions>) {
+async function startRecording(data: Omit<RecordingOptions, 'streamId'>) {
+  if (recording) return
+
+  recordingId = data.recordingId
+  recording = true
   await chrome.offscreen.createDocument({
     url: '/src/entries/background/offscreen.html',
     justification: 'Recording from chrome.tabCapture API',
@@ -55,7 +65,6 @@ chrome.runtime.onMessage.addListener(async (message, sender, _sendResponse) => {
         })
       break
     case 'start-recording':
-      recordingId = message.data.recordingId
       sender.tab && startRecording(message.data)
       break
     default:

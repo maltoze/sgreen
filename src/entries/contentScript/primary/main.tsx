@@ -22,7 +22,7 @@ chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
 renderContent(import.meta.PLUGIN_WEB_EXT_CHUNK_CSS_PATHS, (appRoot) => {
   ReactDOM.createRoot(appRoot).render(
     <React.StrictMode>
-      <App />
+      <App appRoot={appRoot} />
     </React.StrictMode>,
   )
 })

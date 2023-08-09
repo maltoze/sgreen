@@ -2,7 +2,7 @@ import browser from "webextension-polyfill";
 
 export default async function renderContent(
   cssPaths: string[],
-  render: (appRoot: HTMLElement) => void
+  render: (appRoot: ShadowRoot) => void
 ) {
   const appContainer = document.createElement("div");
   const shadowRoot = appContainer.attachShadow({
@@ -28,5 +28,5 @@ export default async function renderContent(
   shadowRoot.appendChild(appRoot);
   document.body.appendChild(appContainer);
 
-  render(appRoot);
+  render(shadowRoot);
 }

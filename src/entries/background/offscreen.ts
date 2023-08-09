@@ -26,19 +26,22 @@ async function startRecording({
   width,
   height,
   recordingId,
+  audio,
 }: RecordingOptions) {
   if (recorder?.state === 'recording') {
     throw new Error('Called startRecording while recording is in progress.')
   }
 
   const media = await navigator.mediaDevices.getUserMedia({
-    audio: {
-      // @ts-ignore
-      mandatory: {
-        chromeMediaSource: 'tab',
-        chromeMediaSourceId: streamId,
-      },
-    },
+    audio: audio
+      ? {
+          // @ts-ignore
+          mandatory: {
+            chromeMediaSource: 'tab',
+            chromeMediaSourceId: streamId,
+          },
+        }
+      : false,
     video: {
       // @ts-ignore
       mandatory: {
@@ -50,10 +53,11 @@ async function startRecording({
     },
   })
 
-  // Continue to play the captured audio to the user.
-  const output = new AudioContext()
-  const source = output.createMediaStreamSource(media)
-  source.connect(output.destination)
+  if (audio) {
+    const output = new AudioContext()
+    const source = output.createMediaStreamSource(media)
+    source.connect(output.destination)
+  }
 
   // Start recording.
   recorder = new MediaRecorder(media, { mimeType: 'video/webm' })

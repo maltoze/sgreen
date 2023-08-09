@@ -1,33 +1,38 @@
 import { openDB } from 'idb'
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { Button } from '~/components/ui/button'
 
 const params = new URLSearchParams(location.search)
 const recordingId = params.get('recordingId')
 
+async function getRecordingBlob(id: string, type?: string): Promise<Blob> {
+  const db = await openDB('sgreen')
+  const tx = db.transaction('recordings', 'readonly')
+  const recording = await tx.store.get(id)
+  return new Blob(recording.data, { type: type ?? recording.type })
+}
+
 export default function App() {
   const videoRef = useRef<HTMLVideoElement>(null)
 
-  async function handleClick() {
-    if (!recordingId) return
-    if (!videoRef.current) return
+  useEffect(() => {
+    const loadVideo = async () => {
+      if (!recordingId) return
+      if (!videoRef.current) return
 
-    const db = await openDB('sgreen')
-    const tx = db.transaction('recordings', 'readonly')
-    const recording = await tx.store.get(recordingId)
-    console.log('------', recording)
-
-    const blob = new Blob(recording.data, { type: recording.type })
-    videoRef.current.src = URL.createObjectURL(blob)
-  }
+      const blob = await getRecordingBlob(recordingId)
+      videoRef.current.src = URL.createObjectURL(blob)
+    }
+    loadVideo()
+  }, [])
 
   return (
-    <div className="flex space-x-4 p-8">
-      <div>
-        <video className="bg-green-500" controls ref={videoRef} />
+    <div className="flex space-x-4 p-20 h-screen">
+      <div className="flex justify-center">
+        <video className="h-full rounded" controls ref={videoRef} />
       </div>
-      <div>
-        <Button onClick={handleClick}>Transcode</Button>
+      <div className="flex w-72 flex-col items-center justify-center p-4">
+        <Button className="w-24">保存</Button>
       </div>
     </div>
   )
