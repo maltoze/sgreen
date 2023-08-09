@@ -5,7 +5,8 @@ import {
   PaddingIcon,
 } from '@radix-ui/react-icons'
 import clsx from 'clsx'
-import { useEffect, useState } from 'react'
+import { AnimatePresence } from 'framer-motion'
+import { useCallback, useEffect, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { Button } from '~/components/ui/button'
 import {
@@ -21,6 +22,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '~/components/ui/tooltip'
+import Countdown from './components/Countdown'
 import { setDockVisible, useStore } from './store'
 
 type RecordMode = 'tab' | 'desktop' | 'app'
@@ -57,10 +59,10 @@ interface AppProps {
 
 function App({ appRoot }: AppProps) {
   const [recordMode, setRecordMode] = useState<RecordMode>('tab')
-  const [countDown, setCountDown] = useState<number | null>(null)
   const [scrollbarHidden, setScrollbarHidden] = useState(false)
   const [audio, setAudio] = useState(false)
   const dockVisible = useStore((state) => state.dockVisible)
+  const [showCountdown, setShowCountdown] = useState(false)
 
   function handleChangeScrollbarHidden(hidden: boolean) {
     if (hidden) {
@@ -83,32 +85,27 @@ function App({ appRoot }: AppProps) {
 
   const [strokeKeys, setStrokeKeys] = useState<string[]>([])
   function handleKeyDown(e: KeyboardEvent) {
-    setStrokeKeys((prev) => [...prev, e.code])
+    setStrokeKeys((prev) => [...prev, e.key])
   }
+
+  const startRecording = useCallback(() => {
+    // chrome.runtime.sendMessage({
+    //   type: 'start-recording',
+    //   target: 'background',
+    //   data: {
+    //     width: window.innerWidth,
+    //     height: window.innerHeight,
+    //     recordingId: uuidv4(),
+    //     audio,
+    //   },
+    // })
+    setIsRecording(true)
+    setShowCountdown(false)
+  }, [audio])
 
   async function handleStart() {
     setDockVisible(false)
-    setCountDown(3)
-    const intervalId = setInterval(() => {
-      setCountDown((prev) => {
-        if (prev === 1) {
-          chrome.runtime.sendMessage({
-            type: 'start-recording',
-            target: 'background',
-            data: {
-              width: window.innerWidth,
-              height: window.innerHeight,
-              recordingId: uuidv4(),
-              audio,
-            },
-          })
-          setIsRecording(true)
-          clearInterval(intervalId)
-          return null
-        }
-        return prev !== null ? prev - 1 : 3
-      })
-    }, 1000)
+    setShowCountdown(true)
   }
 
   const recordingModes: IRecordingMode[] = [
@@ -134,19 +131,15 @@ function App({ appRoot }: AppProps) {
 
   return (
     <>
-      {countDown !== null && (
-        <div className="fixed inset-0 z-[2147483647] flex items-center justify-center bg-background/30 backdrop-blur">
-          <div className="text-[256px] text-slate-950">{countDown}</div>
-        </div>
-      )}
+      {showCountdown && <Countdown count={3} onFinish={startRecording} />}
       <div className="fixed bottom-8 left-1/2 z-[2147483647] flex -translate-x-1/2 justify-center">
-        <div className="flex flex-col items-center space-y-2 ">
-          {strokeKeys.slice(-3).map((strokeKey, idx) => (
+        <div className="flex items-center space-x-2">
+          {strokeKeys.slice(-5).map((strokeKey, idx) => (
             <span
-              className="rounded-lg bg-background/20 px-4 py-2 text-3xl backdrop-blur delay-1000 transition"
+              className="rounded-lg bg-background/30 px-4 py-2 text-3xl backdrop-blur"
               key={idx}
             >
-              {strokeKey}
+              <kbd className="">{strokeKey}</kbd>
             </span>
           ))}
         </div>
