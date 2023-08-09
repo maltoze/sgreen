@@ -5,7 +5,7 @@ import {
   PaddingIcon,
 } from '@radix-ui/react-icons'
 import clsx from 'clsx'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { Button } from '~/components/ui/button'
 import {
@@ -57,8 +57,9 @@ interface AppProps {
 
 function App({ appRoot }: AppProps) {
   const [recordMode, setRecordMode] = useState<RecordMode>('tab')
+  const [countDown, setCountDown] = useState<number | null>(null)
   const [scrollbarHidden, setScrollbarHidden] = useState(false)
-
+  const [audio, setAudio] = useState(false)
   const dockVisible = useStore((state) => state.dockVisible)
 
   function handleChangeScrollbarHidden(hidden: boolean) {
@@ -70,8 +71,20 @@ function App({ appRoot }: AppProps) {
     setScrollbarHidden(hidden)
   }
 
-  const [countDown, setCountDown] = useState<number | null>(null)
-  const [audio, setAudio] = useState(false)
+  const [isRecording, setIsRecording] = useState(false)
+  useEffect(() => {
+    // if (isRecording) {
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+    // }
+  }, [])
+
+  const [strokeKeys, setStrokeKeys] = useState<string[]>([])
+  function handleKeyDown(e: KeyboardEvent) {
+    setStrokeKeys((prev) => [...prev, e.code])
+  }
 
   async function handleStart() {
     setDockVisible(false)
@@ -89,6 +102,7 @@ function App({ appRoot }: AppProps) {
               audio,
             },
           })
+          setIsRecording(true)
           clearInterval(intervalId)
           return null
         }
@@ -125,6 +139,18 @@ function App({ appRoot }: AppProps) {
           <div className="text-[256px] text-slate-950">{countDown}</div>
         </div>
       )}
+      <div className="fixed bottom-8 left-1/2 z-[2147483647] flex -translate-x-1/2 justify-center">
+        <div className="flex flex-col items-center space-y-2 ">
+          {strokeKeys.slice(-3).map((strokeKey, idx) => (
+            <span
+              className="rounded-lg bg-background/20 px-4 py-2 text-3xl backdrop-blur delay-1000 transition"
+              key={idx}
+            >
+              {strokeKey}
+            </span>
+          ))}
+        </div>
+      </div>
       {dockVisible && (
         <div className="fixed bottom-4 left-4 z-[2147483646] flex space-x-2 rounded-xl bg-background/40 p-1.5 text-slate-950 shadow-md backdrop-blur">
           <div className="flex space-x-2">
@@ -137,8 +163,8 @@ function App({ appRoot }: AppProps) {
                       size="sm"
                       onClick={mode.onClick}
                       className={clsx({
-                        'text-green-500': mode.name === recordMode,
-                        'hover:text-green-600': mode.name === recordMode,
+                        'cursor-default text-green-500 hover:bg-transparent hover:text-green-500':
+                          mode.name === recordMode,
                       })}
                     >
                       {mode.icon}
@@ -160,7 +186,7 @@ function App({ appRoot }: AppProps) {
                   size="sm"
                   className="inline-flex items-center space-x-1"
                 >
-                  <span>Options </span>
+                  <span>Options</span>
                   <CaretDownIcon className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
@@ -169,7 +195,7 @@ function App({ appRoot }: AppProps) {
                 container={appRoot}
               >
                 <DropdownMenuContent
-                  className="w-48 text-xs"
+                  className="w-48 rounded-md bg-background/60 backdrop-blur"
                   sideOffset={8}
                   onCloseAutoFocus={(e) => e.preventDefault()}
                 >
