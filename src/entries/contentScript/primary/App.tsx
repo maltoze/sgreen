@@ -6,7 +6,7 @@ import {
 } from '@radix-ui/react-icons'
 import clsx from 'clsx'
 import { AnimatePresence } from 'framer-motion'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { Button } from '~/components/ui/button'
 import {
@@ -23,6 +23,7 @@ import {
   TooltipTrigger,
 } from '~/components/ui/tooltip'
 import Countdown from './components/Countdown'
+import StrokeKeysDisplay from './components/StrokeKeysDisplay'
 import { setDockVisible, useStore } from './store'
 
 type RecordMode = 'tab' | 'desktop' | 'app'
@@ -57,11 +58,20 @@ interface AppProps {
   appRoot: ShadowRoot
 }
 
+const clearRecordTimeout = 3000
+
 function App({ appRoot }: AppProps) {
   const [recordMode, setRecordMode] = useState<RecordMode>('tab')
   const [scrollbarHidden, setScrollbarHidden] = useState(false)
-  const [audio, setAudio] = useState(false)
-  const dockVisible = useStore((state) => state.dockVisible)
+
+  const { dockVisible, audio, setAudio, showKeyStrokes, setShowKeyStrokes } =
+    useStore((state) => ({
+      dockVisible: state.dockVisible,
+      audio: state.audio,
+      setAudio: state.setAudio,
+      showKeyStrokes: state.showKeyStrokes,
+      setShowKeyStrokes: state.setShowKeyStrokes,
+    }))
   const [showCountdown, setShowCountdown] = useState(false)
 
   function handleChangeScrollbarHidden(hidden: boolean) {
@@ -75,30 +85,46 @@ function App({ appRoot }: AppProps) {
 
   const [isRecording, setIsRecording] = useState(false)
   useEffect(() => {
-    // if (isRecording) {
-    document.addEventListener('keydown', handleKeyDown)
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown)
+    if (isRecording && showKeyStrokes) {
+      document.addEventListener('keydown', handleKeyDown)
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown)
+      }
     }
-    // }
-  }, [])
+  }, [isRecording, showKeyStrokes])
 
   const [strokeKeys, setStrokeKeys] = useState<string[]>([])
+  const strokeTimeoutRef = useRef<number | null>(null)
+
   function handleKeyDown(e: KeyboardEvent) {
+    if (strokeTimeoutRef.current) {
+      clearTimeout(strokeTimeoutRef.current)
+    }
     setStrokeKeys((prev) => [...prev, e.key])
+    strokeTimeoutRef.current = setTimeout(() => {
+      setStrokeKeys([])
+    }, clearRecordTimeout)
   }
 
+  useEffect(() => {
+    return () => {
+      if (strokeTimeoutRef.current) {
+        clearTimeout(strokeTimeoutRef.current)
+      }
+    }
+  }, [])
+
   const startRecording = useCallback(() => {
-    // chrome.runtime.sendMessage({
-    //   type: 'start-recording',
-    //   target: 'background',
-    //   data: {
-    //     width: window.innerWidth,
-    //     height: window.innerHeight,
-    //     recordingId: uuidv4(),
-    //     audio,
-    //   },
-    // })
+    chrome.runtime.sendMessage({
+      type: 'start-recording',
+      target: 'background',
+      data: {
+        width: window.innerWidth,
+        height: window.innerHeight,
+        recordingId: uuidv4(),
+        audio,
+      },
+    })
     setIsRecording(true)
     setShowCountdown(false)
   }, [audio])
@@ -131,19 +157,10 @@ function App({ appRoot }: AppProps) {
 
   return (
     <>
-      {showCountdown && <Countdown count={3} onFinish={startRecording} />}
-      <div className="fixed bottom-8 left-1/2 z-[2147483647] flex -translate-x-1/2 justify-center">
-        <div className="flex items-center space-x-2">
-          {strokeKeys.slice(-5).map((strokeKey, idx) => (
-            <span
-              className="rounded-lg bg-background/30 px-4 py-2 text-3xl backdrop-blur"
-              key={idx}
-            >
-              <kbd className="">{strokeKey}</kbd>
-            </span>
-          ))}
-        </div>
-      </div>
+      <AnimatePresence>
+        {showCountdown && <Countdown count={3} onFinish={startRecording} />}
+      </AnimatePresence>
+      <StrokeKeysDisplay strokeKeys={strokeKeys.slice(-5)} />
       {dockVisible && (
         <div className="fixed bottom-4 left-4 z-[2147483646] flex space-x-2 rounded-xl bg-background/40 p-1.5 text-slate-950 shadow-md backdrop-blur">
           <div className="flex space-x-2">
@@ -177,7 +194,7 @@ function App({ appRoot }: AppProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="inline-flex items-center space-x-1"
+                  className="inline-flex select-none items-center space-x-1"
                 >
                   <span>Options</span>
                   <CaretDownIcon className="h-5 w-5" />
@@ -188,27 +205,30 @@ function App({ appRoot }: AppProps) {
                 container={appRoot}
               >
                 <DropdownMenuContent
-                  className="w-48 rounded-md bg-background/60 backdrop-blur"
-                  sideOffset={8}
+                  className="w-52 rounded-md bg-background/60 backdrop-blur"
+                  sideOffset={10}
                   onCloseAutoFocus={(e) => e.preventDefault()}
                 >
                   <DropdownMenuCheckboxItem
                     checked={audio}
                     onCheckedChange={setAudio}
                   >
-                    Audio
+                    Enable Audio
                   </DropdownMenuCheckboxItem>
-                  <DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={showKeyStrokes}
+                    onCheckedChange={setShowKeyStrokes}
+                  >
                     Show Keystrokes
                   </DropdownMenuCheckboxItem>
                   <DropdownMenuCheckboxItem>
-                    Show Mouse
+                    Show Mouse Clicks
                   </DropdownMenuCheckboxItem>
                   <DropdownMenuCheckboxItem
                     onCheckedChange={handleChangeScrollbarHidden}
                     checked={scrollbarHidden}
                   >
-                    Hide Scroll Bar
+                    Hide Scrollbar
                   </DropdownMenuCheckboxItem>
                 </DropdownMenuContent>
               </DropdownMenuPortal>
@@ -216,7 +236,12 @@ function App({ appRoot }: AppProps) {
           </div>
           <div className="flex items-center space-x-2">
             <div className="h-2/3 border-l-2 border-slate-950"></div>
-            <Button variant="ghost" size="sm" onClick={handleStart}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleStart}
+              className="select-none"
+            >
               Start
             </Button>
           </div>
