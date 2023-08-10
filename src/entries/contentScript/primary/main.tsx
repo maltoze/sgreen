@@ -7,6 +7,7 @@ import '~/style.css'
 import { setDockVisible } from './store'
 
 chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
+  console.log('messag-', message)
   switch (message.type) {
     case 'show-dock':
       setDockVisible(true)

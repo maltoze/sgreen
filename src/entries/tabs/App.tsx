@@ -1,38 +1,39 @@
-import { openDB } from 'idb'
 import { useEffect, useRef } from 'react'
 import { Button } from '~/components/ui/button'
 
 const params = new URLSearchParams(location.search)
-const recordingId = params.get('recordingId')
-
-async function getRecordingBlob(id: string, type?: string): Promise<Blob> {
-  const db = await openDB('sgreen')
-  const tx = db.transaction('recordings', 'readonly')
-  const recording = await tx.store.get(id)
-  return new Blob(recording.data, { type: type ?? recording.type })
-}
+const videoUrl = params.get('videoUrl')
 
 export default function App() {
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
-    const loadVideo = async () => {
-      if (!recordingId) return
-      if (!videoRef.current) return
-
-      const blob = await getRecordingBlob(recordingId)
-      videoRef.current.src = URL.createObjectURL(blob)
+    return () => {
+      chrome.offscreen.closeDocument()
     }
-    loadVideo()
   }, [])
 
+  if (!videoUrl) {
+    return null
+  }
+
   return (
-    <div className="flex space-x-4 p-20 h-screen">
+    <div className="flex h-screen space-x-4 p-20">
       <div className="flex justify-center">
-        <video className="h-full rounded" controls ref={videoRef} />
+        <video
+          className="h-full rounded"
+          controls
+          ref={videoRef}
+          src={videoUrl}
+        />
       </div>
       <div className="flex w-72 flex-col items-center justify-center p-4">
-        <Button className="w-24">保存</Button>
+        <Button
+          className="w-24"
+          // onClick={() => chrome.offscreen.closeDocument()}
+        >
+          保存
+        </Button>
       </div>
     </div>
   )

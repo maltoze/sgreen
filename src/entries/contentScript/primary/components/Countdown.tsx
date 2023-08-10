@@ -36,10 +36,10 @@ export default function Countdown({ count, onFinish }: CountdownProps) {
     >
       {currentCount > 0 && (
         <motion.div
-          className="absolute select-none text-9xl"
+          className="absolute select-none"
           key={currentCount}
           initial={{ scale: 0.1 }}
-          animate={{ scale: 3 }}
+          animate={{ scale: 30 }}
         >
           {currentCount}
         </motion.div>

@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import { openDB } from 'idb'
 import { RecordingOptions } from '~/types'
 
 chrome.runtime.onMessage.addListener(async (message) => {
@@ -25,7 +24,6 @@ async function startRecording({
   streamId,
   width,
   height,
-  recordingId,
   audio,
 }: RecordingOptions) {
   if (recorder?.state === 'recording') {
@@ -63,26 +61,12 @@ async function startRecording({
   recorder = new MediaRecorder(media, { mimeType: 'video/webm' })
   recorder.ondataavailable = (event) => data.push(event.data)
   recorder.onstop = async () => {
-    const db = await openDB('sgreen', 3, {
-      upgrade(db) {
-        db.createObjectStore('recordings', {
-          keyPath: 'id',
-        })
-      },
-    })
-    const tx = db.transaction('recordings', 'readwrite')
-    await tx.store.add({
-      data,
-      id: recordingId,
-      type: 'video/webm',
-      created: Date.now(),
-    })
-    await tx.done
-    db.close()
+    const blob = new Blob(data, { type: 'video/webm' })
 
     chrome.runtime.sendMessage({
       type: 'recording-complete',
       target: 'background',
+      videoUrl: URL.createObjectURL(blob),
     })
     // Clear state ready for next recording
     recorder = undefined

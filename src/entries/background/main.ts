@@ -34,7 +34,6 @@ chrome.action.onClicked.addListener(async (tab) => {
 async function startRecording(data: Omit<RecordingOptions, 'streamId'>) {
   if (recording) return
 
-  recordingId = data.recordingId
   recording = true
   await chrome.offscreen.createDocument({
     url: '/src/entries/background/offscreen.html',
@@ -48,21 +47,17 @@ async function startRecording(data: Omit<RecordingOptions, 'streamId'>) {
   })
 }
 
-let recordingId: string | null = null
-
 chrome.runtime.onMessage.addListener(async (message, sender, _sendResponse) => {
   if (message.target !== 'background') {
     return
   }
   switch (message.type) {
     case 'recording-complete':
-      chrome.offscreen.closeDocument()
-      recordingId &&
-        chrome.tabs.create({
-          url: `/src/entries/tabs/main.html?recordingId=${encodeURIComponent(
-            recordingId,
-          )}`,
-        })
+      chrome.tabs.create({
+        url: `/src/entries/tabs/main.html?videoUrl=${encodeURIComponent(
+          message.videoUrl,
+        )}`,
+      })
       break
     case 'start-recording':
       sender.tab && startRecording(message.data)

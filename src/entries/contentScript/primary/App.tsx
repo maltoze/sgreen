@@ -7,7 +7,6 @@ import {
 import clsx from 'clsx'
 import { AnimatePresence } from 'framer-motion'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { v4 as uuidv4 } from 'uuid'
 import { Button } from '~/components/ui/button'
 import {
   DropdownMenu,
@@ -121,7 +120,6 @@ function App({ appRoot }: AppProps) {
       data: {
         width: window.innerWidth,
         height: window.innerHeight,
-        recordingId: uuidv4(),
         audio,
       },
     })
@@ -188,7 +186,7 @@ function App({ appRoot }: AppProps) {
             ))}
           </div>
           <div className="flex items-center space-x-2">
-            <div className="h-2/3 border-l-2 border-slate-950"></div>
+            <div className="h-2/3 border border-primary"></div>
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -235,7 +233,7 @@ function App({ appRoot }: AppProps) {
             </DropdownMenu>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="h-2/3 border-l-2 border-slate-950"></div>
+            <div className="h-2/3 border border-primary"></div>
             <Button
               variant="ghost"
               size="sm"

@@ -5,6 +5,7 @@ interface ISgreenState {
   audio: boolean
   dockVisible: boolean
   showKeyStrokes: boolean
+  isRecording: boolean
   setAudio: (audio: boolean) => void
   setShowKeyStrokes: (showKeyStrokes: boolean) => void
 }
@@ -33,6 +34,7 @@ export const useStore = create<ISgreenState>()(
       audio: false,
       dockVisible: false,
       showKeyStrokes: false,
+      isRecording: false,
       setAudio: (audio: boolean) => set({ audio }),
       setShowKeyStrokes: (showKeyStrokes: boolean) => set({ showKeyStrokes }),
     }),
@@ -49,3 +51,5 @@ export const useStore = create<ISgreenState>()(
 
 export const setDockVisible = (visible: boolean) =>
   useStore.setState({ dockVisible: visible })
+export const setIsRecording = (isRecording: boolean) =>
+  useStore.setState({ isRecording })
