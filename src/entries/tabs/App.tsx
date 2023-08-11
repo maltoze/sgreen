@@ -15,11 +15,11 @@ export default function App() {
     <div className="flex h-screen space-x-4 p-20">
       <div className="flex justify-center">
         <video
-          className="h-full rounded"
+          className="rounded-lg shadow-md"
           controls
           ref={videoRef}
           src={videoUrl}
-          preload="auto"
+          preload="metadata"
         />
       </div>
       <div className="flex w-72 flex-col items-center justify-center p-4">

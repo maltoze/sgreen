@@ -34,7 +34,10 @@ export default function Countdown({ count, onFinish }: CountdownProps) {
           className="absolute select-none"
           key={currentCount}
           initial={{ scale: 1 }}
-          animate={{ scale: 30 }}
+          animate={{
+            scale: 30,
+            transition: { duration: 0.5, ease: 'easeInOut' },
+          }}
         >
           {currentCount}
         </motion.div>

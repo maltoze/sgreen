@@ -16,18 +16,18 @@ export const chromeSyncStorage: StateStorage = {
   },
 }
 
-export const chromeSessionStorage: StateStorage = {
+export const chromeLocalStorage: StateStorage = {
   getItem: async (name: string): Promise<string | null> => {
     return new Promise((resolve) => {
-      chrome.storage.session.get(name, (result) => {
+      chrome.storage.local.get(name, (result) => {
         resolve(result[name] || null)
       })
     })
   },
   setItem: async (name: string, value: string | boolean): Promise<void> => {
-    return chrome.storage.session.set({ [name]: value })
+    return chrome.storage.local.set({ [name]: value })
   },
   removeItem: async (name: string): Promise<void> => {
-    return chrome.storage.session.remove(name)
+    return chrome.storage.local.remove(name)
   },
 }

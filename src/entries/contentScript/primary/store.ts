@@ -1,5 +1,6 @@
 import { create } from 'zustand'
-import { RecordingOptions } from '~/types'
+import { createJSONStorage, persist } from 'zustand/middleware'
+import { chromeLocalStorage } from '~/lib/storage'
 
 export interface IContentState {
   audio: boolean
@@ -7,37 +8,54 @@ export interface IContentState {
   streamId: string
   showCountdown: boolean
   isRecording: boolean
+  recordingTabId?: number | null
+  tabId?: number | null
+  scrollbarHidden: boolean
 }
 
-// const persistKeys = ['audio', 'showKeyStrokes']
+const persistKeys = [
+  'showKeystrokes',
+  'isRecording',
+  'recordingTabId',
+  'scrollbarHidden',
+]
 
 export const useStore = create<IContentState>()(
-  (_set, _get) => ({
-    streamId: '',
-    showKeystrokes: false,
-    audio: false,
-    showCountdown: false,
-    isRecording: false,
-  }),
-  // {
-  //   name: 'sgreen-storage',
-  //   storage: createJSONStorage(() => chromeSessionStorage),
-  //   partialize: (state) =>
-  //     Object.fromEntries(
-  //       Object.entries(state).filter(([key]) => persistKeys.includes(key)),
-  //     ),
-  // },
+  persist(
+    (_set, _get) => ({
+      showKeystrokes: false,
+      audio: false,
+      showCountdown: false,
+      isRecording: false,
+      streamId: '',
+      tabId: null,
+      recordingTabId: null,
+      scrollbarHidden: false,
+    }),
+    {
+      name: 'sgreen-local-storage',
+      storage: createJSONStorage(() => chromeLocalStorage),
+      partialize: (state) =>
+        Object.fromEntries(
+          Object.entries(state).filter(([key]) => persistKeys.includes(key)),
+        ),
+    },
+  ),
 )
 
 export const setRecordingData = ({
   audio,
   showKeystrokes,
   streamId,
-}: RecordingOptions) =>
+  recordingTabId,
+  scrollbarHidden,
+}: IContentState) =>
   useStore.setState({
     audio,
     showKeystrokes,
     streamId,
+    recordingTabId,
+    scrollbarHidden,
   })
 
 export const setShowCountdown = (value: boolean) =>
@@ -47,3 +65,5 @@ export const setShowCountdown = (value: boolean) =>
 
 export const setIsRecording = (recording: boolean) =>
   useStore.setState({ isRecording: recording })
+
+export const setTabId = (tabId: number) => useStore.setState({ tabId })

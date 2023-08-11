@@ -17,22 +17,43 @@ function hideScrollBar() {
   )
 }
 
-function showScrollBar() {
-  style.sheet?.deleteRule(0)
+function deleteRule() {
+  if (style.sheet?.cssRules.length && style.sheet?.cssRules.length > 0) {
+    style.sheet?.deleteRule(0)
+  }
 }
 
 const clearRecordTimeout = 3000
 
 function App() {
-  const [scrollbarHidden, setScrollbarHidden] = useState(false)
-  const { audio, streamId, showKeystrokes, showCountdown, isRecording } =
-    useStore((state) => ({
-      audio: state.audio,
-      streamId: state.streamId,
-      showKeystrokes: state.showKeystrokes,
-      showCountdown: state.showCountdown,
-      isRecording: state.isRecording,
-    }))
+  const {
+    audio,
+    streamId,
+    showKeystrokes,
+    showCountdown,
+    isRecording,
+    scrollbarHidden,
+    tabId,
+    recordingTabId,
+  } = useStore((state) => ({
+    audio: state.audio,
+    streamId: state.streamId,
+    showKeystrokes: state.showKeystrokes,
+    showCountdown: state.showCountdown,
+    isRecording: state.isRecording,
+    scrollbarHidden: state.scrollbarHidden,
+    tabId: state.tabId,
+    recordingTabId: state.recordingTabId,
+  }))
+
+  useEffect(() => {
+    if (scrollbarHidden && isRecording && tabId === recordingTabId) {
+      hideScrollBar()
+    }
+    return () => {
+      deleteRule()
+    }
+  }, [isRecording, recordingTabId, scrollbarHidden, tabId])
 
   const [strokeKeys, setStrokeKeys] = useState<string[]>([])
   const strokeTimeoutRef = useRef<number | null>(null)
@@ -69,13 +90,13 @@ function App() {
   )
 
   useEffect(() => {
-    if (showKeystrokes) {
+    if (showKeystrokes && isRecording && tabId === recordingTabId) {
       document.addEventListener('keydown', handleKeyDown)
       return () => {
         document.removeEventListener('keydown', handleKeyDown)
       }
     }
-  }, [handleKeyDown, showKeystrokes])
+  }, [handleKeyDown, isRecording, recordingTabId, showKeystrokes, tabId])
 
   useEffect(() => {
     return () => {
@@ -99,6 +120,10 @@ function App() {
       },
     })
   }, [audio, streamId])
+
+  if (isRecording && tabId !== recordingTabId) {
+    return null
+  }
 
   return (
     <>

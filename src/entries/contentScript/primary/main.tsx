@@ -4,17 +4,30 @@ import ReactDOM from 'react-dom/client'
 import renderContent from '../renderContent'
 import App from './App'
 import '~/style.css'
-import { setIsRecording, setRecordingData, setShowCountdown } from './store'
+import {
+  setIsRecording,
+  setRecordingData,
+  setShowCountdown,
+  setTabId,
+} from './store'
+
+chrome.runtime.sendMessage({
+  type: 'request-tab-id',
+  target: 'background',
+})
 
 chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
-  console.log('------', message)
   switch (message.type) {
     case 'start-recording':
+      setIsRecording(true)
       setRecordingData(message.data)
       setShowCountdown(true)
       break
     case 'stop-recording':
       setIsRecording(false)
+      break
+    case 'response-tab-id':
+      setTabId(message.tabId)
       break
     default:
       break

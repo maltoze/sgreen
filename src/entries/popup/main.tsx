@@ -1,12 +1,13 @@
 import '../enableDevHmr'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { getCurrentTab, hasOffscreenDocument } from '~/lib/utils'
+import { getCurrentTab } from '~/lib/utils'
 import App from './App'
 
 async function main() {
-  const hasOffscreen = await hasOffscreenDocument()
-  if (hasOffscreen) {
+  const localStore = await chrome.storage.local.get('sgreen-local-storage')
+  const localData = JSON.parse(localStore['sgreen-local-storage'] || '{}')
+  if (localData?.state?.isRecording) {
     chrome.runtime.sendMessage({
       type: 'stop-recording',
       target: 'offscreen',

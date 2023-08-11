@@ -4,8 +4,9 @@ import { Button } from '~/components/ui/button'
 import { Label } from '~/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '~/components/ui/radio-group'
 import { Switch } from '~/components/ui/switch'
-import { getCurrentTab, hasOffscreenDocument } from '~/lib/utils'
+import { getCurrentTab } from '~/lib/utils'
 import '~/style.css'
+import { IPopupState, useStore } from './store'
 
 type RecordingMode = 'tab' | 'desktop' | 'application'
 
@@ -22,31 +23,22 @@ async function getStreamId(tabId: number) {
   })
 }
 
-type OptionsKey = 'audio' | 'showKeystrokes' | 'hideScrollbar'
-
-type IOptions = {
-  [key in OptionsKey]: boolean
-}
 interface IOptionsConfig {
-  name: OptionsKey
+  name: keyof IPopupState
   label: string
   disabled?: boolean
 }
 
-const defaultOptions: IOptions = {
-  audio: false,
-  showKeystrokes: false,
-  hideScrollbar: false,
-}
-
 function App() {
   const [recordingMode, setRecordingMode] = useState<RecordingMode>('tab')
-  const [options, setOptions] = useState(defaultOptions)
+
+  const options = useStore((state) => ({
+    audio: state.audio,
+    showKeystrokes: state.showKeystrokes,
+    scrollbarHidden: state.scrollbarHidden,
+  }))
 
   async function startRecording() {
-    const hasOffscreen = await hasOffscreenDocument()
-    if (hasOffscreen) return
-
     const tab = await getCurrentTab()
     if (!tab.id) return
 
@@ -57,6 +49,8 @@ function App() {
         streamId,
         audio: options.audio,
         showKeystrokes: options.showKeystrokes,
+        recordingTabId: tab.id,
+        scrollbarHidden: options.scrollbarHidden,
       },
     })
     window.close()
@@ -88,7 +82,7 @@ function App() {
       disabled: recordingMode !== 'tab',
     },
     {
-      name: 'hideScrollbar',
+      name: 'scrollbarHidden',
       label: 'Hide Scroll Bar',
       disabled: recordingMode !== 'tab',
     },
@@ -130,7 +124,7 @@ function App() {
                 disabled={disabled}
                 checked={options[name]}
                 onCheckedChange={(value) =>
-                  setOptions((prev) => ({ ...prev, [name]: value }))
+                  useStore.setState({ [name]: value })
                 }
               />
             </Label>

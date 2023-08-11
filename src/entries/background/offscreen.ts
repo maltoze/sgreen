@@ -47,6 +47,8 @@ async function startRecording({
       mandatory: {
         chromeMediaSource: 'tab',
         chromeMediaSourceId: streamId,
+        minWidth: width,
+        minHeight: height,
         maxWidth: width,
         maxHeight: height,
       },
