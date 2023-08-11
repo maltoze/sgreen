@@ -27,6 +27,7 @@ async function startRecording({
   width,
   height,
   audio,
+  recordingMode = 'tab',
 }: RecordingOptions) {
   if (recorder?.state === 'recording') {
     throw new Error('Called startRecording while recording is in progress.')
@@ -37,7 +38,7 @@ async function startRecording({
       ? {
           // @ts-ignore
           mandatory: {
-            chromeMediaSource: 'tab',
+            chromeMediaSource: recordingMode,
             chromeMediaSourceId: streamId,
           },
         }
@@ -45,12 +46,12 @@ async function startRecording({
     video: {
       // @ts-ignore
       mandatory: {
-        chromeMediaSource: 'tab',
+        chromeMediaSource: recordingMode,
         chromeMediaSourceId: streamId,
-        minWidth: width,
-        minHeight: height,
-        maxWidth: width,
-        maxHeight: height,
+        // minWidth: width,
+        // minHeight: height,
+        // maxWidth: width,
+        // maxHeight: height,
       },
     },
   })

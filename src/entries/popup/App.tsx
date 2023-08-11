@@ -38,7 +38,29 @@ function App() {
     scrollbarHidden: state.scrollbarHidden,
   }))
 
-  async function startRecording() {
+  function startRecording() {
+    switch (recordingMode) {
+      case 'tab':
+        return startRecordingTab()
+      case 'desktop':
+        return startRecordingDesktop()
+      default:
+        break
+    }
+  }
+
+  async function startRecordingDesktop() {
+    chrome.runtime.sendMessage({
+      type: 'start-recording',
+      target: 'background',
+      data: {
+        audio: options.audio,
+        recordingMode: 'desktop',
+      },
+    })
+  }
+
+  async function startRecordingTab() {
     const tab = await getCurrentTab()
     if (!tab.id) return
 

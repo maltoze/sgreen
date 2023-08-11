@@ -1,5 +1,5 @@
 import { offscreenUrl } from '~/constants'
-import { hasOffscreenDocument } from '~/lib/utils'
+import { getCurrentTab, hasOffscreenDocument } from '~/lib/utils'
 import { RecordingOptions } from '~/types'
 
 async function startRecording(data: RecordingOptions) {
@@ -11,17 +11,34 @@ async function startRecording(data: RecordingOptions) {
       reasons: [chrome.offscreen.Reason.USER_MEDIA],
     })
   }
-  chrome.runtime.sendMessage({
-    type: 'start-recording',
-    target: 'offscreen',
-    data,
-  })
+  if (data.recordingMode === 'desktop') {
+    const tab = await getCurrentTab()
+    chrome.desktopCapture.chooseDesktopMedia(
+      ['screen', 'audio'],
+      tab,
+      (streamId, _options) => {
+        console.log(streamId, _options)
+        chrome.runtime.sendMessage({
+          type: 'start-recording',
+          target: 'offscreen',
+          data: { streamId, recordingMode: 'desktop', audio: false },
+        })
+      },
+    )
+  } else {
+    chrome.runtime.sendMessage({
+      type: 'start-recording',
+      target: 'offscreen',
+      data,
+    })
+  }
 }
 
 chrome.runtime.onMessage.addListener(async (message, sender, _sendResponse) => {
   if (message.target !== 'background') {
     return
   }
+  console.log('------message--', message)
   switch (message.type) {
     case 'recording-complete':
       chrome.tabs.create({

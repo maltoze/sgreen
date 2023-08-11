@@ -10,4 +10,5 @@ export interface RecordingOptions {
   audio: boolean
   showKeystrokes: boolean
   hideScrollbar: boolean
+  recordingMode: string
 }

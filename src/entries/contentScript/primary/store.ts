@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
+import { localStorageName } from '~/constants'
 import { chromeLocalStorage } from '~/lib/storage'
 
 export interface IContentState {
@@ -33,7 +34,7 @@ export const useStore = create<IContentState>()(
       scrollbarHidden: false,
     }),
     {
-      name: 'sgreen-local-storage',
+      name: localStorageName,
       storage: createJSONStorage(() => chromeLocalStorage),
       partialize: (state) =>
         Object.fromEntries(

@@ -1,3 +1,3 @@
 # Sgreen
 
-A screen recorder chrome extension.
+A Chrome extension for screen recording.
