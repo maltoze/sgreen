@@ -4,16 +4,17 @@ import ReactDOM from 'react-dom/client'
 import renderContent from '../renderContent'
 import App from './App'
 import '~/style.css'
-import { setDockVisible } from './store'
+import { setIsRecording, setRecordingData, setShowCountdown } from './store'
 
 chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
-  console.log('messag-', message)
+  console.log('------', message)
   switch (message.type) {
-    case 'show-dock':
-      setDockVisible(true)
+    case 'start-recording':
+      setRecordingData(message.data)
+      setShowCountdown(true)
       break
-    case 'hide-dock':
-      setDockVisible(false)
+    case 'stop-recording':
+      setIsRecording(false)
       break
     default:
       break
@@ -23,7 +24,7 @@ chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
 renderContent(import.meta.PLUGIN_WEB_EXT_CHUNK_CSS_PATHS, (appRoot) => {
   ReactDOM.createRoot(appRoot).render(
     <React.StrictMode>
-      <App appRoot={appRoot} />
+      <App />
     </React.StrictMode>,
   )
 })

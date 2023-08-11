@@ -4,17 +4,10 @@ import { Button } from '~/components/ui/button'
 import { Label } from '~/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '~/components/ui/radio-group'
 import { Switch } from '~/components/ui/switch'
+import { getCurrentTab, hasOffscreenDocument } from '~/lib/utils'
 import '~/style.css'
 
 type RecordingMode = 'tab' | 'desktop' | 'application'
-
-async function getCurrentTab() {
-  const [tab] = await chrome.tabs.query({
-    active: true,
-    currentWindow: true,
-  })
-  return tab
-}
 
 async function getStreamId(tabId: number) {
   return new Promise<string | null>((resolve) => {
@@ -29,29 +22,44 @@ async function getStreamId(tabId: number) {
   })
 }
 
+type OptionsKey = 'audio' | 'showKeystrokes' | 'hideScrollbar'
+
+type IOptions = {
+  [key in OptionsKey]: boolean
+}
+interface IOptionsConfig {
+  name: OptionsKey
+  label: string
+  disabled?: boolean
+}
+
+const defaultOptions: IOptions = {
+  audio: false,
+  showKeystrokes: false,
+  hideScrollbar: false,
+}
+
 function App() {
   const [recordingMode, setRecordingMode] = useState<RecordingMode>('tab')
+  const [options, setOptions] = useState(defaultOptions)
 
   async function startRecording() {
+    const hasOffscreen = await hasOffscreenDocument()
+    if (hasOffscreen) return
+
     const tab = await getCurrentTab()
     if (!tab.id) return
 
     const streamId = await getStreamId(tab.id)
-
-    await chrome.offscreen.createDocument({
-      url: '/src/entries/background/offscreen.html',
-      justification: 'Recording from chrome.tabCapture API',
-      reasons: [chrome.offscreen.Reason.USER_MEDIA],
-    })
-    chrome.runtime.sendMessage({
+    chrome.tabs.sendMessage(tab.id, {
       type: 'start-recording',
-      target: 'offscreen',
       data: {
         streamId,
-        width: tab.width,
-        height: tab.height,
+        audio: options.audio,
+        showKeystrokes: options.showKeystrokes,
       },
     })
+    window.close()
   }
 
   const recordingModes = [
@@ -72,7 +80,7 @@ function App() {
     },
   ]
 
-  const options = [
+  const optionsConfigs: IOptionsConfig[] = [
     { name: 'audio', label: 'Enable Audio' },
     {
       name: 'showKeystrokes',
@@ -80,7 +88,7 @@ function App() {
       disabled: recordingMode !== 'tab',
     },
     {
-      name: 'hideScrollBar',
+      name: 'hideScrollbar',
       label: 'Hide Scroll Bar',
       disabled: recordingMode !== 'tab',
     },
@@ -110,14 +118,21 @@ function App() {
         </section>
 
         <section className="space-y-3">
-          {options.map(({ name, label, disabled }) => (
+          {optionsConfigs.map(({ name, label, disabled }) => (
             <Label
               className="flex items-center justify-between [&:has([data-disabled])]:text-muted-foreground"
               key={name}
               htmlFor={name}
             >
               <span>{label}</span>
-              <Switch id={name} disabled={disabled} />
+              <Switch
+                id={name}
+                disabled={disabled}
+                checked={options[name]}
+                onCheckedChange={(value) =>
+                  setOptions((prev) => ({ ...prev, [name]: value }))
+                }
+              />
             </Label>
           ))}
         </section>

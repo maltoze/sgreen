@@ -6,6 +6,8 @@ export interface IconProps extends React.SVGAttributes<SVGElement> {
 export interface RecordingOptions {
   width: number
   height: number
-  streamId?: string
-  audio?: boolean
+  streamId: string
+  audio: boolean
+  showKeystrokes: boolean
+  hideScrollbar: boolean
 }

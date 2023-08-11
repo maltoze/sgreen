@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
+import fixWebmDuration from 'fix-webm-duration'
 import { RecordingOptions } from '~/types'
 
 chrome.runtime.onMessage.addListener(async (message) => {
@@ -19,6 +20,7 @@ chrome.runtime.onMessage.addListener(async (message) => {
 
 let recorder: MediaRecorder | undefined
 let data: Blob[] = []
+let startTime: number
 
 async function startRecording({
   streamId,
@@ -61,12 +63,14 @@ async function startRecording({
   recorder = new MediaRecorder(media, { mimeType: 'video/webm' })
   recorder.ondataavailable = (event) => data.push(event.data)
   recorder.onstop = async () => {
+    const duration = Date.now() - startTime
     const blob = new Blob(data, { type: 'video/webm' })
+    const fixedBlob = await fixWebmDuration(blob, duration, { logger: false })
 
     chrome.runtime.sendMessage({
       type: 'recording-complete',
       target: 'background',
-      videoUrl: URL.createObjectURL(blob),
+      videoUrl: URL.createObjectURL(fixedBlob),
     })
     // Clear state ready for next recording
     recorder = undefined
@@ -76,6 +80,7 @@ async function startRecording({
     console.error('MediaRecorder error:', event)
   }
   recorder.start()
+  startTime = Date.now()
 
   // Record the current state in the URL. This provides a very low-bandwidth
   // way of communicating with the service worker (the service worker can check

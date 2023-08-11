@@ -1,68 +1,41 @@
+import { offscreenUrl } from '~/constants'
+import { hasOffscreenDocument } from '~/lib/utils'
 import { RecordingOptions } from '~/types'
 
-let streamId: string
-let recording = false
-let dockVisible = false
+async function startRecording(data: RecordingOptions) {
+  const hasOffscreen = await hasOffscreenDocument()
+  if (hasOffscreen) return
 
-chrome.action.onClicked.addListener(async (tab) => {
-  if (dockVisible) {
-    tab.id && chrome.tabs.sendMessage(tab.id, { type: 'hide-dock' })
-    dockVisible = false
-  } else {
-    tab.id && chrome.tabs.sendMessage(tab.id, { type: 'show-dock' })
-    dockVisible = true
-  }
-
-  if (recording) {
-    chrome.runtime.sendMessage({
-      type: 'stop-recording',
-      target: 'offscreen',
-    })
-    recording = false
-  } else {
-    chrome.tabCapture.getMediaStreamId(
-      {
-        targetTabId: tab.id,
-      },
-      async (streamId_) => {
-        streamId = streamId_
-      },
-    )
-  }
-})
-
-async function startRecording(data: Omit<RecordingOptions, 'streamId'>) {
-  if (recording) return
-
-  recording = true
   await chrome.offscreen.createDocument({
-    url: '/src/entries/background/offscreen.html',
+    url: offscreenUrl,
     justification: 'Recording from chrome.tabCapture API',
     reasons: [chrome.offscreen.Reason.USER_MEDIA],
   })
   chrome.runtime.sendMessage({
     type: 'start-recording',
     target: 'offscreen',
-    data: { streamId, ...data },
+    data,
   })
 }
 
-chrome.runtime.onMessage.addListener(async (message, sender, _sendResponse) => {
-  if (message.target !== 'background') {
-    return
-  }
-  switch (message.type) {
-    case 'recording-complete':
-      chrome.tabs.create({
-        url: `/src/entries/tabs/main.html?videoUrl=${encodeURIComponent(
-          message.videoUrl,
-        )}`,
-      })
-      break
-    case 'start-recording':
-      sender.tab && startRecording(message.data)
-      break
-    default:
-      throw new Error('Unrecognized message:', message.type)
-  }
-})
+chrome.runtime.onMessage.addListener(
+  async (message, _sender, _sendResponse) => {
+    if (message.target !== 'background') {
+      return
+    }
+    switch (message.type) {
+      case 'recording-complete':
+        chrome.tabs.create({
+          url: `/src/entries/tabs/main.html?videoUrl=${encodeURIComponent(
+            message.videoUrl,
+          )}`,
+        })
+        break
+      case 'start-recording':
+        startRecording(message.data)
+        break
+      default:
+        throw new Error('Unrecognized message:', message.type)
+    }
+  },
+)

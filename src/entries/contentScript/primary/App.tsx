@@ -1,39 +1,7 @@
-import {
-  CaretDownIcon,
-  DashboardIcon,
-  DesktopIcon,
-  PaddingIcon,
-} from '@radix-ui/react-icons'
-import clsx from 'clsx'
-import { AnimatePresence } from 'framer-motion'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Button } from '~/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuPortal,
-  DropdownMenuTrigger,
-} from '~/components/ui/dropdown-menu'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '~/components/ui/tooltip'
 import Countdown from './components/Countdown'
 import StrokeKeysDisplay from './components/StrokeKeysDisplay'
-import { setDockVisible, useStore } from './store'
-
-type RecordMode = 'tab' | 'desktop' | 'app'
-
-interface IRecordingMode {
-  name: RecordMode
-  label?: string
-  icon: React.ReactNode
-  tooltip: string
-  onClick?: () => void
-}
+import { setIsRecording, setShowCountdown, useStore } from './store'
 
 const style = document.createElement('style')
 document.head.appendChild(style)
@@ -53,57 +21,61 @@ function showScrollBar() {
   style.sheet?.deleteRule(0)
 }
 
-interface AppProps {
-  appRoot: ShadowRoot
-}
-
 const clearRecordTimeout = 3000
 
-function App({ appRoot }: AppProps) {
-  const [recordMode, setRecordMode] = useState<RecordMode>('tab')
+function App() {
   const [scrollbarHidden, setScrollbarHidden] = useState(false)
-
-  const { dockVisible, audio, setAudio, showKeyStrokes, setShowKeyStrokes } =
+  const { audio, streamId, showKeystrokes, showCountdown, isRecording } =
     useStore((state) => ({
-      dockVisible: state.dockVisible,
       audio: state.audio,
-      setAudio: state.setAudio,
-      showKeyStrokes: state.showKeyStrokes,
-      setShowKeyStrokes: state.setShowKeyStrokes,
+      streamId: state.streamId,
+      showKeystrokes: state.showKeystrokes,
+      showCountdown: state.showCountdown,
+      isRecording: state.isRecording,
     }))
-  const [showCountdown, setShowCountdown] = useState(false)
 
-  function handleChangeScrollbarHidden(hidden: boolean) {
-    if (hidden) {
-      hideScrollBar()
-    } else {
-      showScrollBar()
-    }
-    setScrollbarHidden(hidden)
-  }
+  const [strokeKeys, setStrokeKeys] = useState<string[]>([])
+  const strokeTimeoutRef = useRef<number | null>(null)
 
-  const [isRecording, setIsRecording] = useState(false)
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (!isRecording) return
+
+      if (strokeTimeoutRef.current) {
+        clearTimeout(strokeTimeoutRef.current)
+      }
+
+      const keyboardModifiers = {
+        Shift: e.shiftKey,
+        Control: e.ctrlKey,
+        Alt: e.altKey,
+        Meta: e.metaKey,
+      }
+      const activeModifiers = Object.keys(keyboardModifiers).filter(
+        (modifier) =>
+          keyboardModifiers[modifier as keyof typeof keyboardModifiers],
+      )
+
+      if (activeModifiers.includes(e.key)) {
+        setStrokeKeys(activeModifiers)
+      } else {
+        setStrokeKeys([...activeModifiers, e.key])
+      }
+      strokeTimeoutRef.current = setTimeout(() => {
+        setStrokeKeys([])
+      }, clearRecordTimeout)
+    },
+    [isRecording],
+  )
+
   useEffect(() => {
-    if (isRecording && showKeyStrokes) {
+    if (showKeystrokes) {
       document.addEventListener('keydown', handleKeyDown)
       return () => {
         document.removeEventListener('keydown', handleKeyDown)
       }
     }
-  }, [isRecording, showKeyStrokes])
-
-  const [strokeKeys, setStrokeKeys] = useState<string[]>([])
-  const strokeTimeoutRef = useRef<number | null>(null)
-
-  function handleKeyDown(e: KeyboardEvent) {
-    if (strokeTimeoutRef.current) {
-      clearTimeout(strokeTimeoutRef.current)
-    }
-    setStrokeKeys((prev) => [...prev, e.key])
-    strokeTimeoutRef.current = setTimeout(() => {
-      setStrokeKeys([])
-    }, clearRecordTimeout)
-  }
+  }, [handleKeyDown, showKeystrokes])
 
   useEffect(() => {
     return () => {
@@ -114,6 +86,8 @@ function App({ appRoot }: AppProps) {
   }, [])
 
   const startRecording = useCallback(() => {
+    setShowCountdown(false)
+    setIsRecording(true)
     chrome.runtime.sendMessage({
       type: 'start-recording',
       target: 'background',
@@ -121,130 +95,15 @@ function App({ appRoot }: AppProps) {
         width: window.innerWidth,
         height: window.innerHeight,
         audio,
+        streamId,
       },
     })
-    setIsRecording(true)
-    setShowCountdown(false)
-  }, [audio])
-
-  async function handleStart() {
-    setDockVisible(false)
-    setShowCountdown(true)
-  }
-
-  const recordingModes: IRecordingMode[] = [
-    {
-      name: 'tab',
-      icon: <PaddingIcon className="h-4 w-4" />,
-      tooltip: 'Current tab',
-      onClick: () => setRecordMode('tab'),
-    },
-    {
-      name: 'desktop',
-      icon: <DesktopIcon className="h-4 w-4" />,
-      tooltip: 'Desktop',
-      onClick: () => setRecordMode('desktop'),
-    },
-    {
-      name: 'app',
-      icon: <DashboardIcon className="h-4 w-4" />,
-      tooltip: 'Apps',
-      onClick: () => setRecordMode('app'),
-    },
-  ]
+  }, [audio, streamId])
 
   return (
     <>
-      <AnimatePresence>
-        {showCountdown && <Countdown count={3} onFinish={startRecording} />}
-      </AnimatePresence>
-      <StrokeKeysDisplay strokeKeys={strokeKeys.slice(-5)} />
-      {dockVisible && (
-        <div className="fixed bottom-4 left-4 z-[2147483646] flex space-x-2 rounded-xl bg-background/40 p-1.5 text-slate-950 shadow-md backdrop-blur">
-          <div className="flex space-x-2">
-            {recordingModes.map((mode) => (
-              <TooltipProvider key={mode.name}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={mode.onClick}
-                      className={clsx({
-                        'cursor-default text-green-500 hover:bg-transparent hover:text-green-500':
-                          mode.name === recordMode,
-                      })}
-                    >
-                      {mode.icon}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{mode.tooltip}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            ))}
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="h-2/3 border border-primary"></div>
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="inline-flex select-none items-center space-x-1"
-                >
-                  <span>Options</span>
-                  <CaretDownIcon className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuPortal
-                // @ts-ignore
-                container={appRoot}
-              >
-                <DropdownMenuContent
-                  className="w-52 rounded-md bg-background/60 backdrop-blur"
-                  sideOffset={10}
-                  onCloseAutoFocus={(e) => e.preventDefault()}
-                >
-                  <DropdownMenuCheckboxItem
-                    checked={audio}
-                    onCheckedChange={setAudio}
-                  >
-                    Enable Audio
-                  </DropdownMenuCheckboxItem>
-                  <DropdownMenuCheckboxItem
-                    checked={showKeyStrokes}
-                    onCheckedChange={setShowKeyStrokes}
-                  >
-                    Show Keystrokes
-                  </DropdownMenuCheckboxItem>
-                  <DropdownMenuCheckboxItem>
-                    Show Mouse Clicks
-                  </DropdownMenuCheckboxItem>
-                  <DropdownMenuCheckboxItem
-                    onCheckedChange={handleChangeScrollbarHidden}
-                    checked={scrollbarHidden}
-                  >
-                    Hide Scrollbar
-                  </DropdownMenuCheckboxItem>
-                </DropdownMenuContent>
-              </DropdownMenuPortal>
-            </DropdownMenu>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="h-2/3 border border-primary"></div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleStart}
-              className="select-none"
-            >
-              Start
-            </Button>
-          </div>
-        </div>
-      )}
+      {showCountdown && <Countdown count={3} onFinish={startRecording} />}
+      <StrokeKeysDisplay strokeKeys={strokeKeys} />
     </>
   )
 }

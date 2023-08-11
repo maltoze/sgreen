@@ -1,9 +1,9 @@
 {
-  "name": "screen-recorder",
+  "name": "sgreen",
   "version": "0.1.0",
-  "displayName": "Screen Recorder",
+  "displayName": "Sgreen",
   "author": "https://github.com/maltoze",
-  "description": "A screen recorder web extension",
+  "description": "A screen recorder chrome extension",
   "scripts": {
     "build": "vite build",
     "watch": "vite build --watch --mode development --minify false",
@@ -49,6 +49,7 @@
     "@radix-ui/react-tooltip": "^1.0.6",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
+    "fix-webm-duration": "^1.0.5",
     "framer-motion": "^10.15.1",
     "lucide-react": "^0.263.1",
     "react": "^18.2.0",

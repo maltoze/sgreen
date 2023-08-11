@@ -28,22 +28,17 @@ export default function Countdown({ count, onFinish }: CountdownProps) {
   }, [currentCount, onFinish])
 
   return (
-    <motion.div
-      className="fixed inset-0 z-[2147483647] flex items-center justify-center bg-background/30"
-      initial={{ backdropFilter: 'blur(0px)' }}
-      animate={{ backdropFilter: 'blur(4px)', transition: { duration: 0.1 } }}
-      exit={{ backdropFilter: 'blur(0px)', transition: { duration: 0.3 } }}
-    >
+    <div className="fixed inset-0 z-[2147483647] flex items-center justify-center bg-background/30 backdrop-blur">
       {currentCount > 0 && (
         <motion.div
           className="absolute select-none"
           key={currentCount}
-          initial={{ scale: 0.1 }}
+          initial={{ scale: 1 }}
           animate={{ scale: 30 }}
         >
           {currentCount}
         </motion.div>
       )}
-    </motion.div>
+    </div>
   )
 }

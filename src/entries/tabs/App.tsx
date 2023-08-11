@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { Button } from '~/components/ui/button'
 
 const params = new URLSearchParams(location.search)
@@ -6,12 +6,6 @@ const videoUrl = params.get('videoUrl')
 
 export default function App() {
   const videoRef = useRef<HTMLVideoElement>(null)
-
-  useEffect(() => {
-    return () => {
-      chrome.offscreen.closeDocument()
-    }
-  }, [])
 
   if (!videoUrl) {
     return null
@@ -25,6 +19,7 @@ export default function App() {
           controls
           ref={videoRef}
           src={videoUrl}
+          preload="auto"
         />
       </div>
       <div className="flex w-72 flex-col items-center justify-center p-4">
