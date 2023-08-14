@@ -3,16 +3,33 @@ import { createJSONStorage, persist } from 'zustand/middleware'
 import { localStorageName } from '~/constants'
 import { chromeLocalStorage } from '~/lib/storage'
 
-export interface IContentState {
+export interface IState {
   isRecording: boolean
+  scrollbarHidden: boolean
+  audio: boolean
+  showKeystrokes: boolean
+  showControlbar: boolean
+  showCountdown: boolean
+  streamId: string
 }
 
-const persistKeys = ['isRecording']
+const persistKeys = [
+  'isRecording',
+  'scrollbarHidden',
+  'showKeystrokes',
+  'audio',
+]
 
-export const useStore = create<IContentState>()(
+export const useStore = create<IState>()(
   persist(
     (_set, _get) => ({
       isRecording: false,
+      scrollbarHidden: false,
+      showKeystrokes: false,
+      audio: false,
+      showControlbar: false,
+      showCountdown: false,
+      streamId: '',
     }),
     {
       name: localStorageName,

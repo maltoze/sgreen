@@ -9,10 +9,6 @@ async function main() {
   const localStore = await chrome.storage.local.get(localStorageName)
   const localData = JSON.parse(localStore[localStorageName] || '{}')
   if (localData?.state?.isRecording) {
-    chrome.runtime.sendMessage({
-      type: 'stop-recording',
-      target: 'offscreen',
-    })
     const tab = await getCurrentTab()
     tab.id && chrome.tabs.sendMessage(tab.id, { type: 'stop-recording' })
   } else {

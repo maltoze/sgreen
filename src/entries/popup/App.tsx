@@ -4,7 +4,7 @@ import { Button } from '~/components/ui/button'
 import { Label } from '~/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '~/components/ui/radio-group'
 import { Switch } from '~/components/ui/switch'
-import { getCurrentTab } from '~/lib/utils'
+import { getCurrentTab, supportOffscreenRecording } from '~/lib/utils'
 import '~/style.css'
 import { IPopupState, useStore } from './store'
 
@@ -15,7 +15,7 @@ async function getStreamId(tabId: number) {
     chrome.tabCapture.getMediaStreamId(
       {
         targetTabId: tabId,
-        consumerTabId: tabId,
+        consumerTabId: supportOffscreenRecording ? undefined : tabId,
       },
       (streamId) => {
         resolve(streamId)
@@ -84,6 +84,7 @@ function App() {
         audio: options.audio,
         showKeystrokes: options.showKeystrokes,
         scrollbarHidden: options.scrollbarHidden,
+        recordingMode: 'tab',
       },
     })
     window.close()

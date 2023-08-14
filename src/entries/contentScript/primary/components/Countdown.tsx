@@ -22,8 +22,8 @@ export default function Countdown({ count, onFinish }: CountdownProps) {
 
   useEffect(() => {
     if (currentCount === 0) {
-      onFinish()
       clearInterval(intervalIdRef.current)
+      onFinish()
     }
   }, [currentCount, onFinish])
 
@@ -36,7 +36,7 @@ export default function Countdown({ count, onFinish }: CountdownProps) {
           initial={{ scale: 1 }}
           animate={{
             scale: 20,
-            transition: { duration: 0.3, ease: 'easeOut' },
+            transition: { ease: 'easeOut' },
           }}
         >
           {currentCount}

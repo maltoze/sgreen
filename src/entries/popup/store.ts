@@ -12,7 +12,7 @@ const persistKeys = ['showKeystrokes', 'audio', 'scrollbarHidden']
 
 export const useStore = create<IPopupState>()(
   persist(
-    (_set, _get) => ({
+    (_set) => ({
       showKeystrokes: false,
       audio: false,
       scrollbarHidden: false,

@@ -35,3 +35,21 @@ export async function getCurrentTab() {
   })
   return tab
 }
+
+export const chromeVersion = /Chrome\/([0-9.]+)/.exec(navigator.userAgent)?.[1]
+// See:https://developer.chrome.com/docs/extensions/mv3/screen_capture/#audio-and-video-new-tab
+export const supportOffscreenRecording = chromeVersion && chromeVersion >= '116'
+
+export function getStreamId(tabId: number) {
+  return new Promise<string>((resolve) => {
+    chrome.tabCapture.getMediaStreamId(
+      {
+        targetTabId: tabId,
+        consumerTabId: supportOffscreenRecording ? undefined : tabId,
+      },
+      (streamId) => {
+        resolve(streamId)
+      },
+    )
+  })
+}

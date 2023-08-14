@@ -18,3 +18,4 @@ export interface ChromeRuntimeMessage<T> {
   data?: T
   target?: string
 }
+export type RecordingMode = 'tab' | 'desktop' | 'application'
