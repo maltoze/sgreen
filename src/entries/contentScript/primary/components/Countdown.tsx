@@ -36,7 +36,7 @@ export default function Countdown({ count, onFinish }: CountdownProps) {
           initial={{ scale: 1 }}
           animate={{
             scale: 20,
-            transition: { duration: 0.5, ease: 'easeInOut' },
+            transition: { duration: 0.3, ease: 'easeOut' },
           }}
         >
           {currentCount}

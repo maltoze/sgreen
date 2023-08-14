@@ -1,7 +1,9 @@
+import fixWebmDuration from 'fix-webm-duration'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { ChromeRuntimeMessage, RecordingOptions } from '~/types'
 import Countdown from './components/Countdown'
 import StrokeKeysDisplay from './components/StrokeKeysDisplay'
-import { setIsRecording, setShowCountdown, useStore } from './store'
+import { setIsRecording, useStore } from './store'
 
 const style = document.createElement('style')
 document.head.appendChild(style)
@@ -25,35 +27,138 @@ function deleteRule() {
 
 const clearRecordTimeout = 3000
 
+let recorder: MediaRecorder | undefined
+let data: Blob[] = []
+let startTime: number
+
+async function startRecordingMedia({
+  streamId,
+  width,
+  height,
+  audio,
+  recordingMode = 'tab',
+}: RecordingOptions) {
+  if (recorder?.state === 'recording') {
+    throw new Error('Called startRecording while recording is in progress.')
+  }
+  console.table({ streamId, width, height, audio, recordingMode })
+
+  const videoConstraints = {
+    mandatory: {
+      chromeMediaSource: recordingMode,
+      chromeMediaSourceId: streamId,
+    },
+  }
+  if (width) {
+    // @ts-ignore
+    videoConstraints.mandatory.minWidth = width
+    // @ts-ignore
+    videoConstraints.mandatory.maxWidth = width
+  }
+  if (height) {
+    // @ts-ignore
+    videoConstraints.mandatory.minHeight = height
+    // @ts-ignore
+    videoConstraints.mandatory.maxHeight = height
+  }
+
+  const media = await navigator.mediaDevices.getUserMedia({
+    audio: audio
+      ? {
+          // @ts-ignore
+          mandatory: {
+            chromeMediaSource: recordingMode,
+            chromeMediaSourceId: streamId,
+          },
+        }
+      : false,
+    // @ts-ignore
+    video: videoConstraints,
+  })
+
+  if (audio) {
+    const output = new AudioContext()
+    const source = output.createMediaStreamSource(media)
+    source.connect(output.destination)
+  }
+
+  // Start recording.
+  recorder = new MediaRecorder(media, { mimeType: 'video/webm' })
+  recorder.ondataavailable = (event) => data.push(event.data)
+  recorder.onstop = async () => {
+    const duration = Date.now() - startTime
+    const blob = new Blob(data, { type: 'video/webm' })
+    const fixedBlob = await fixWebmDuration(blob, duration, { logger: false })
+
+    setIsRecording(false)
+    chrome.runtime.sendMessage({
+      type: 'recording-complete',
+      target: 'background',
+      videoUrl: URL.createObjectURL(fixedBlob),
+    })
+    // Clear state ready for next recording
+    recorder = undefined
+    data = []
+  }
+  recorder.onerror = (event) => {
+    console.error('MediaRecorder error:', event)
+  }
+  recorder.start()
+  startTime = Date.now()
+}
+
+async function stopRecording() {
+  recorder?.stop()
+
+  // Stopping the tracks makes sure the recording icon in the tab is removed.
+  recorder?.stream.getTracks().forEach((t) => t.stop())
+}
+
 function App() {
-  const {
-    audio,
-    streamId,
-    showKeystrokes,
-    showCountdown,
-    isRecording,
-    scrollbarHidden,
-    tabId,
-    recordingTabId,
-  } = useStore((state) => ({
-    audio: state.audio,
-    streamId: state.streamId,
-    showKeystrokes: state.showKeystrokes,
-    showCountdown: state.showCountdown,
-    isRecording: state.isRecording,
-    scrollbarHidden: state.scrollbarHidden,
-    tabId: state.tabId,
-    recordingTabId: state.recordingTabId,
-  }))
+  const [recordingOptions, setRecordingOptions] = useState<RecordingOptions>()
+  const [showCountdown, setShowCountdown] = useState(false)
+  const { scrollbarHidden, audio, showKeystrokes, streamId } =
+    recordingOptions ?? {}
+  const isRecording = useStore((state) => state.isRecording)
 
   useEffect(() => {
-    if (scrollbarHidden && isRecording && tabId === recordingTabId) {
+    function handleChromeMessage(
+      message: ChromeRuntimeMessage<RecordingOptions>,
+      _sender: chrome.runtime.MessageSender,
+      _sendResponse: (response?: unknown) => void,
+    ) {
+      switch (message.type) {
+        case 'start-recording':
+          if (message.data?.recordingMode === 'tab') {
+            setRecordingOptions(message.data)
+            setShowCountdown(true)
+          } else {
+            message.data && startRecordingMedia(message.data)
+            setIsRecording(true)
+          }
+          break
+        case 'stop-recording':
+          stopRecording()
+          setIsRecording(false)
+          break
+        default:
+          break
+      }
+    }
+    chrome.runtime.onMessage.addListener(handleChromeMessage)
+    return () => {
+      chrome.runtime.onMessage.removeListener(handleChromeMessage)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (scrollbarHidden && isRecording) {
       hideScrollBar()
     }
     return () => {
       deleteRule()
     }
-  }, [isRecording, recordingTabId, scrollbarHidden, tabId])
+  }, [isRecording, scrollbarHidden])
 
   const [strokeKeys, setStrokeKeys] = useState<string[]>([])
   const strokeTimeoutRef = useRef<number | null>(null)
@@ -90,13 +195,13 @@ function App() {
   )
 
   useEffect(() => {
-    if (showKeystrokes && isRecording && tabId === recordingTabId) {
-      document.addEventListener('keydown', handleKeyDown)
+    if (showKeystrokes && isRecording) {
+      window.addEventListener('keydown', handleKeyDown)
       return () => {
-        document.removeEventListener('keydown', handleKeyDown)
+        window.removeEventListener('keydown', handleKeyDown)
       }
     }
-  }, [handleKeyDown, isRecording, recordingTabId, showKeystrokes, tabId])
+  }, [handleKeyDown, isRecording, showKeystrokes])
 
   useEffect(() => {
     return () => {
@@ -109,21 +214,15 @@ function App() {
   const startRecording = useCallback(() => {
     setShowCountdown(false)
     setIsRecording(true)
-    chrome.runtime.sendMessage({
-      type: 'start-recording',
-      target: 'background',
-      data: {
+    if (streamId) {
+      startRecordingMedia({
+        audio,
         width: window.innerWidth,
         height: window.innerHeight,
-        audio,
         streamId,
-      },
-    })
+      })
+    }
   }, [audio, streamId])
-
-  if (isRecording && tabId !== recordingTabId) {
-    return null
-  }
 
   return (
     <>

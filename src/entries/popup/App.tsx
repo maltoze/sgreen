@@ -15,6 +15,7 @@ async function getStreamId(tabId: number) {
     chrome.tabCapture.getMediaStreamId(
       {
         targetTabId: tabId,
+        consumerTabId: tabId,
       },
       (streamId) => {
         resolve(streamId)
@@ -38,15 +39,27 @@ function App() {
     scrollbarHidden: state.scrollbarHidden,
   }))
 
-  function startRecording() {
+  function handleStartRecording() {
     switch (recordingMode) {
       case 'tab':
         return startRecordingTab()
       case 'desktop':
         return startRecordingDesktop()
+      case 'application':
+        return startRecordingApp()
       default:
         break
     }
+  }
+
+  function startRecordingApp() {
+    chrome.runtime.sendMessage({
+      type: 'start-recording',
+      target: 'background',
+      data: {
+        recordingMode: 'app',
+      },
+    })
   }
 
   async function startRecordingDesktop() {
@@ -54,7 +67,6 @@ function App() {
       type: 'start-recording',
       target: 'background',
       data: {
-        audio: options.audio,
         recordingMode: 'desktop',
       },
     })
@@ -65,13 +77,12 @@ function App() {
     if (!tab.id) return
 
     const streamId = await getStreamId(tab.id)
-    chrome.tabs.sendMessage(tab.id, {
+    await chrome.tabs.sendMessage(tab.id, {
       type: 'start-recording',
       data: {
         streamId,
         audio: options.audio,
         showKeystrokes: options.showKeystrokes,
-        recordingTabId: tab.id,
         scrollbarHidden: options.scrollbarHidden,
       },
     })
@@ -97,7 +108,11 @@ function App() {
   ]
 
   const optionsConfigs: IOptionsConfig[] = [
-    { name: 'audio', label: 'Enable Audio' },
+    {
+      name: 'audio',
+      label: 'Enable Audio',
+      disabled: recordingMode !== 'tab',
+    },
     {
       name: 'showKeystrokes',
       label: 'Show Keystrokes',
@@ -157,7 +172,7 @@ function App() {
           <Button
             variant="default"
             className="inline-flex w-full space-x-2"
-            onClick={startRecording}
+            onClick={handleStartRecording}
           >
             <span className="inline-block">Start</span>
           </Button>
