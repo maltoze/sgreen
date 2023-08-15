@@ -41,6 +41,7 @@ export function getManifest(): chrome.runtime.ManifestV3 {
     name: pkg.displayName ?? pkg.name,
     version: pkg.version,
     manifest_version: 3,
+    minimum_chrome_version: '116',
     ...manifest,
   }
 }

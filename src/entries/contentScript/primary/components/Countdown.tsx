@@ -31,7 +31,7 @@ export default function Countdown({ count, onFinish }: CountdownProps) {
     <div className="fixed inset-0 z-[2147483647] flex items-center justify-center bg-background/30 backdrop-blur">
       {currentCount > 0 && (
         <motion.div
-          className="absolute select-none"
+          className="absolute select-none text-foreground"
           key={currentCount}
           initial={{ scale: 1 }}
           animate={{

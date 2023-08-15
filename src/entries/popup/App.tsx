@@ -4,25 +4,11 @@ import { Button } from '~/components/ui/button'
 import { Label } from '~/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '~/components/ui/radio-group'
 import { Switch } from '~/components/ui/switch'
-import { getCurrentTab, supportOffscreenRecording } from '~/lib/utils'
+import { getCurrentTab, getStreamId } from '~/lib/utils'
 import '~/style.css'
 import { IPopupState, useStore } from './store'
 
 type RecordingMode = 'tab' | 'desktop' | 'application'
-
-async function getStreamId(tabId: number) {
-  return new Promise<string | null>((resolve) => {
-    chrome.tabCapture.getMediaStreamId(
-      {
-        targetTabId: tabId,
-        consumerTabId: supportOffscreenRecording ? undefined : tabId,
-      },
-      (streamId) => {
-        resolve(streamId)
-      },
-    )
-  })
-}
 
 interface IOptionsConfig {
   name: keyof IPopupState

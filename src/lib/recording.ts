@@ -18,7 +18,6 @@ export async function start(
     mandatory: {
       chromeMediaSource: recordingMode,
       chromeMediaSourceId: streamId,
-      minFrameRate: 30,
     },
   }
   if (width) {

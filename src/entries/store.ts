@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { localStorageName } from '~/constants'
 import { chromeLocalStorage } from '~/lib/storage'
+import { RecordingMode } from '~/types'
 
 export interface IState {
   isRecording: boolean
@@ -10,14 +11,14 @@ export interface IState {
   showKeystrokes: boolean
   showControlbar: boolean
   showCountdown: boolean
-  streamId: string
+  recordingMode: RecordingMode
 }
 
 const persistKeys = [
-  'isRecording',
   'scrollbarHidden',
   'showKeystrokes',
   'audio',
+  'isRecording',
 ]
 
 export const useStore = create<IState>()(
@@ -29,7 +30,7 @@ export const useStore = create<IState>()(
       audio: false,
       showControlbar: false,
       showCountdown: false,
-      streamId: '',
+      recordingMode: 'tab',
     }),
     {
       name: localStorageName,

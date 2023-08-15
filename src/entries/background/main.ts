@@ -1,49 +1,38 @@
 import { offscreenUrl } from '~/constants'
-import {
-  getCurrentTab,
-  hasOffscreenDocument,
-  supportOffscreenRecording,
-} from '~/lib/utils'
+import { getCurrentTab, getStreamId, hasOffscreenDocument } from '~/lib/utils'
 import { RecordingOptions } from '~/types'
-import { useStore } from '../store'
 
+let isRecording = false
 chrome.action.onClicked.addListener(async (tab) => {
-  const isRecording = useStore.getState().isRecording
   if (isRecording) {
-    if (supportOffscreenRecording) {
-      chrome.runtime.sendMessage({
-        type: 'stop-recording',
-        target: 'offscreen',
-      })
-    }
+    chrome.runtime.sendMessage({
+      type: 'stop-recording',
+      target: 'offscreen',
+    })
     tab.id && chrome.tabs.sendMessage(tab.id, { type: 'stop-recording' })
+    isRecording = false
   } else {
-    if (supportOffscreenRecording) {
-      chrome.tabCapture.getMediaStreamId(
-        {
-          targetTabId: tab.id,
-        },
-        (streamId) => {
-          tab.id &&
-            chrome.tabs.sendMessage(tab.id, {
-              type: 'show-controlbar',
-              data: { streamId },
-            })
-        },
-      )
-    } else {
-      tab.id &&
-        chrome.tabs.sendMessage(tab.id, {
-          type: 'show-controlbar',
-          data: { streamId: '' },
-        })
-    }
+    tab.id &&
+      chrome.tabs.sendMessage(tab.id, {
+        type: 'show-controlbar',
+      })
   }
 })
 
-async function startRecording(data: RecordingOptions) {
+async function startRecording(data: Partial<RecordingOptions>) {
+  const hasOffscreen = await hasOffscreenDocument()
+  if (!hasOffscreen) {
+    await chrome.offscreen.createDocument({
+      url: offscreenUrl,
+      justification: 'Recording from chrome.tabCapture API',
+      reasons: [chrome.offscreen.Reason.USER_MEDIA],
+    })
+  }
+
   const { recordingMode } = data
   const tab = await getCurrentTab()
+  if (!tab.id) return
+
   if (recordingMode !== 'tab') {
     chrome.desktopCapture.chooseDesktopMedia(
       [recordingMode === 'desktop' ? 'screen' : 'window', 'audio'],
@@ -61,20 +50,16 @@ async function startRecording(data: RecordingOptions) {
       },
     )
   } else {
-    const hasOffscreen = await hasOffscreenDocument()
-    if (!hasOffscreen) {
-      await chrome.offscreen.createDocument({
-        url: offscreenUrl,
-        justification: 'Recording from chrome.tabCapture API',
-        reasons: [chrome.offscreen.Reason.USER_MEDIA],
-      })
-    }
+    const streamId = await getStreamId(tab.id)
+    console.log('streamId------', streamId)
+
     chrome.runtime.sendMessage({
       type: 'start-recording',
       target: 'offscreen',
-      data,
+      data: { streamId, ...data },
     })
   }
+  isRecording = true
 }
 
 chrome.runtime.onMessage.addListener(
@@ -84,6 +69,7 @@ chrome.runtime.onMessage.addListener(
     }
     switch (message.type) {
       case 'recording-complete':
+        isRecording = false
         chrome.tabs.create({
           url: `/src/entries/tabs/main.html?videoUrl=${encodeURIComponent(
             message.videoUrl,

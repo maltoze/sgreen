@@ -5,12 +5,12 @@ export interface IconProps extends React.SVGAttributes<SVGElement> {
 
 export interface RecordingOptions {
   streamId: string
-  width?: number
-  height?: number
-  audio?: boolean
-  showKeystrokes?: boolean
-  scrollbarHidden?: boolean
-  recordingMode?: string
+  width: number
+  height: number
+  audio: boolean
+  showKeystrokes: boolean
+  scrollbarHidden: boolean
+  recordingMode: string
 }
 
 export interface ChromeRuntimeMessage<T> {
