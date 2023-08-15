@@ -10,7 +10,7 @@ export interface RecordingOptions {
   audio: boolean
   showKeystrokes: boolean
   scrollbarHidden: boolean
-  recordingMode: string
+  recordingMode: RecordingMode
 }
 
 export interface ChromeRuntimeMessage<T> {

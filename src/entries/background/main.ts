@@ -1,16 +1,19 @@
 import { offscreenUrl } from '~/constants'
 import { getCurrentTab, getStreamId, hasOffscreenDocument } from '~/lib/utils'
-import { RecordingOptions } from '~/types'
+import { RecordingMode, RecordingOptions } from '~/types'
 
 let isRecording = false
+let recordingMode: RecordingMode | undefined
+
 chrome.action.onClicked.addListener(async (tab) => {
-  if (isRecording) {
+  if (isRecording && recordingMode === 'tab') {
     chrome.runtime.sendMessage({
       type: 'stop-recording',
       target: 'offscreen',
     })
     tab.id && chrome.tabs.sendMessage(tab.id, { type: 'stop-recording' })
     isRecording = false
+    chrome.action.setBadgeText({ text: '' })
   } else {
     tab.id &&
       chrome.tabs.sendMessage(tab.id, {
@@ -29,7 +32,7 @@ async function startRecording(data: Partial<RecordingOptions>) {
     })
   }
 
-  const { recordingMode } = data
+  recordingMode = data.recordingMode
   const tab = await getCurrentTab()
   if (!tab.id) return
 
@@ -51,13 +54,16 @@ async function startRecording(data: Partial<RecordingOptions>) {
     )
   } else {
     const streamId = await getStreamId(tab.id)
-    console.log('streamId------', streamId)
 
     chrome.runtime.sendMessage({
       type: 'start-recording',
       target: 'offscreen',
       data: { streamId, ...data },
     })
+
+    chrome.action.setBadgeText({ text: 'REC' })
+    chrome.action.setBadgeTextColor({ color: '#ffffff' })
+    chrome.action.setBadgeBackgroundColor({ color: '#dc2626' })
   }
   isRecording = true
 }
@@ -70,6 +76,7 @@ chrome.runtime.onMessage.addListener(
     switch (message.type) {
       case 'recording-complete':
         isRecording = false
+        chrome.action.setBadgeText({ text: '' })
         chrome.tabs.create({
           url: `/src/entries/tabs/main.html?videoUrl=${encodeURIComponent(
             message.videoUrl,
