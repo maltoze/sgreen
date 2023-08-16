@@ -18,6 +18,7 @@ export async function start(
     mandatory: {
       chromeMediaSource: recordingMode,
       chromeMediaSourceId: streamId,
+      minFrameRate: 30,
     },
   }
   if (width) {
@@ -56,7 +57,7 @@ export async function start(
   // Start recording.
   recorder = new MediaRecorder(media, {
     mimeType: 'video/webm',
-    // videoBitsPerSecond: 8 * 1024 * 1024,
+    // videoBitsPerSecond: 12 * 1024 * 1024,
   })
   recorder.ondataavailable = (event) => data.push(event.data)
   recorder.onstop = async () => {

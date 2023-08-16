@@ -103,6 +103,7 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
           recordingMode,
         },
       })
+      onClose()
     }
   }
 
@@ -183,7 +184,7 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
                       container={appRoot}
                     >
                       <DropdownMenuSubContent
-                        className="z-[2147483647] rounded-md bg-background/60 backdrop-blur"
+                        className="z-[2147483647] rounded-md bg-background/60 backdrop-blur tabular-nums min-w-[4rem]"
                         sideOffset={4}
                       >
                         <DropdownMenuItem>0s</DropdownMenuItem>

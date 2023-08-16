@@ -31,6 +31,8 @@ const manifest: Partial<chrome.runtime.ManifestV3> = {
     'offscreen',
     'storage',
     'desktopCapture',
+    // chrome.windows
+    'tabs',
   ],
 }
 

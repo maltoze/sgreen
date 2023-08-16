@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import { motion } from 'framer-motion'
 
 interface StrokeKeysDisplayProps {
@@ -13,7 +14,10 @@ export default function StrokeKeysDisplay({
         {strokeKeys.map((strokeKey, idx) => (
           <motion.kbd
             key={`${strokeKey}-${idx}`}
-            className="select-none rounded-lg border bg-background/30 px-4 py-2 text-3xl font-semibold text-foreground shadow-[0_2px_0px_1px_hsl(214.3_31.8%_91.4%)] backdrop-blur"
+            className={clsx(
+              'select-none rounded-lg border bg-background/30 px-4 py-2 text-3xl font-semibold text-foreground shadow-[0_2px_0px_1px_hsl(214.3_31.8%_91.4%)] backdrop-blur',
+              { 'w-48 h-[54px]': strokeKey === ' ' },
+            )}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
