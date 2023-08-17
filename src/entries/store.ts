@@ -13,6 +13,12 @@ export interface IState {
   showCountdown: boolean
   recordingMode: RecordingMode
   countdown: number
+  area: {
+    x: number
+    y: number
+    width: number
+    height: number
+  }
 }
 
 const persistKeys = [
@@ -20,6 +26,8 @@ const persistKeys = [
   'showKeystrokes',
   'audio',
   'isRecording',
+  'area',
+  'countdown',
 ]
 
 export const useStore = create<IState>()(
@@ -33,6 +41,7 @@ export const useStore = create<IState>()(
       showCountdown: false,
       recordingMode: 'tab',
       countdown: 3,
+      area: { x: 0, y: 0, width: 0, height: 0 },
     }),
     {
       name: localStorageName,

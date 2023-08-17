@@ -1,9 +1,7 @@
-import fixWebmDuration from 'fix-webm-duration'
 import { RecordingOptions } from '~/types'
 
 let recorder: MediaRecorder | undefined
 let data: Blob[] = []
-let startTime: number
 
 export async function start(
   { streamId, width, height, audio, recordingMode = 'tab' }: RecordingOptions,
@@ -56,21 +54,19 @@ export async function start(
 
   // Start recording.
   recorder = new MediaRecorder(media, {
-    mimeType: 'video/webm',
+    mimeType: 'video/webm;codecs=h264',
     // videoBitsPerSecond: 12 * 1024 * 1024,
   })
   recorder.ondataavailable = (event) => data.push(event.data)
   recorder.onstop = async () => {
-    const duration = Date.now() - startTime
     const blob = new Blob(data, { type: 'video/webm' })
-    const fixedBlob = await fixWebmDuration(blob, duration, { logger: false })
 
     callback?.()
 
     chrome.runtime.sendMessage({
       type: 'recording-complete',
       target: 'background',
-      videoUrl: URL.createObjectURL(fixedBlob),
+      videoUrl: URL.createObjectURL(blob),
     })
     // Clear state ready for next recording
     recorder = undefined
@@ -80,7 +76,6 @@ export async function start(
     console.error('MediaRecorder error:', event)
   }
   recorder.start()
-  startTime = Date.now()
 }
 
 export async function stop() {

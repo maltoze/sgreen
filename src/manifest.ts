@@ -44,6 +44,11 @@ export function getManifest(): chrome.runtime.ManifestV3 {
     version: pkg.version,
     manifest_version: 3,
     minimum_chrome_version: '116',
+    content_security_policy: {
+      extension_pages:
+        "script-src 'self' 'wasm-unsafe-eval' ; object-src 'self';",
+    },
+
     ...manifest,
   }
 }

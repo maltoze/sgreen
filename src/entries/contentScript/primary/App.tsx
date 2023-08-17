@@ -130,10 +130,12 @@ function App({ appRoot }: AppProps) {
         },
       })
       useStore.setState({
-        x: 0,
-        y: 0,
-        width: window.innerWidth,
-        height: window.innerHeight,
+        area: {
+          x: 0,
+          y: 0,
+          width: window.innerWidth,
+          height: window.innerHeight,
+        },
       })
     }, recordingDelay)
   }, [audio, recordingMode])
