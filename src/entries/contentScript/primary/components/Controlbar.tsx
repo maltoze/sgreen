@@ -13,8 +13,9 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
@@ -41,14 +42,14 @@ interface ControlbarProps {
 }
 
 export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
-  const { audio, showKeystrokes, scrollbarHidden, recordingMode } = useStore(
-    (state) => ({
+  const { audio, showKeystrokes, scrollbarHidden, recordingMode, countdown } =
+    useStore((state) => ({
       audio: state.audio,
       showKeystrokes: state.showKeystrokes,
       scrollbarHidden: state.scrollbarHidden,
       recordingMode: state.recordingMode,
-    }),
-  )
+      countdown: state.countdown,
+    }))
 
   const recordingModes: RecordingModeOption[] = [
     {
@@ -164,6 +165,7 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
                 <DropdownMenuContent
                   className="z-[2147483647] w-52 rounded-md bg-background/60 backdrop-blur"
                   sideOffset={10}
+                  side="top"
                   onCloseAutoFocus={(e) => e.preventDefault()}
                 >
                   {menuItems.map((item) => (
@@ -184,15 +186,24 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
                       container={appRoot}
                     >
                       <DropdownMenuSubContent
-                        className="z-[2147483647] rounded-md bg-background/60 backdrop-blur tabular-nums min-w-[4rem]"
+                        className="z-[2147483647] min-w-[5rem] rounded-md bg-background/60 tabular-nums backdrop-blur"
                         sideOffset={4}
                       >
-                        <DropdownMenuItem>0s</DropdownMenuItem>
-                        <DropdownMenuItem>1s</DropdownMenuItem>
-                        <DropdownMenuItem>3s</DropdownMenuItem>
-                        <DropdownMenuItem>5s</DropdownMenuItem>
-                        <DropdownMenuItem>7s</DropdownMenuItem>
-                        <DropdownMenuItem>10s</DropdownMenuItem>
+                        <DropdownMenuRadioGroup
+                          value={countdown.toString()}
+                          onValueChange={(value) =>
+                            useStore.setState({ countdown: parseInt(value) })
+                          }
+                        >
+                          {[0, 1, 3, 5, 7, 10].map((second) => (
+                            <DropdownMenuRadioItem
+                              key={`countdown-${second}`}
+                              value={second.toString()}
+                            >
+                              {second}s
+                            </DropdownMenuRadioItem>
+                          ))}
+                        </DropdownMenuRadioGroup>
                       </DropdownMenuSubContent>
                     </DropdownMenuPortal>
                   </DropdownMenuSub>

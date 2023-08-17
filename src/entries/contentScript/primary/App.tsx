@@ -21,6 +21,7 @@ function App({ appRoot }: AppProps) {
     recordingMode,
     showCountdown,
     isRecording,
+    countdown,
   } = useStore((state) => ({
     scrollbarHidden: state.scrollbarHidden,
     audio: state.audio,
@@ -28,6 +29,7 @@ function App({ appRoot }: AppProps) {
     recordingMode: state.recordingMode,
     showCountdown: state.showCountdown,
     isRecording: state.isRecording,
+    countdown: state.countdown,
   }))
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -127,12 +129,20 @@ function App({ appRoot }: AppProps) {
           recordingMode,
         },
       })
+      useStore.setState({
+        x: 0,
+        y: 0,
+        width: window.innerWidth,
+        height: window.innerHeight,
+      })
     }, recordingDelay)
   }, [audio, recordingMode])
 
   return (
     <>
-      {showCountdown && <Countdown count={3} onFinish={startRecording} />}
+      {showCountdown && (
+        <Countdown count={countdown} onFinish={startRecording} />
+      )}
       <StrokeKeysDisplay strokeKeys={strokeKeys} />
       {showControlbar && (
         <Controlbar

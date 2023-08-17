@@ -12,6 +12,7 @@ export interface IState {
   showControlbar: boolean
   showCountdown: boolean
   recordingMode: RecordingMode
+  countdown: number
 }
 
 const persistKeys = [
@@ -31,6 +32,7 @@ export const useStore = create<IState>()(
       showControlbar: false,
       showCountdown: false,
       recordingMode: 'tab',
+      countdown: 3,
     }),
     {
       name: localStorageName,
