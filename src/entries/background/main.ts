@@ -48,7 +48,7 @@ async function startRecording(data: Partial<RecordingOptions>) {
     chrome.action.setBadgeBackgroundColor({ color: '#dc2626' })
   } else {
     chrome.desktopCapture.chooseDesktopMedia(
-      [recordingMode === 'desktop' ? 'screen' : 'window', 'audio'],
+      ['screen', 'window', 'audio', 'tab'],
       tab,
       (streamId, { canRequestAudioTrack }) => {
         tab.id &&

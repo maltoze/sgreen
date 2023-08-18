@@ -69,11 +69,6 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
       label: 'Desktop',
       icon: <DesktopIcon className="h-5 w-5" />,
     },
-    {
-      name: 'application',
-      label: 'Apps',
-      icon: <DashboardIcon className="h-5 w-5" />,
-    },
   ]
 
   const menuItems = [

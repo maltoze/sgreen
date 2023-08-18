@@ -108,6 +108,7 @@ export async function start(
       // videoBitsPerSecond: bitRate,
     })
   }
+
   recorder.ondataavailable = (event) => data.push(event.data)
   recorder.onstop = async () => {
     const duration = Date.now() - startTime

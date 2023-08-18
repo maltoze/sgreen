@@ -13,6 +13,9 @@ const SelectingArea = () => {
   const [isSelecting, setIsSelecting] = useState(false)
 
   function handlePointerDown(e: React.PointerEvent) {
+    // Only left click
+    if (e.button !== 0) return
+
     setStartPos({ x: e.clientX, y: e.clientY })
     setEndPos({ x: e.clientX, y: e.clientY })
     setIsSelecting(true)
@@ -58,7 +61,7 @@ const SelectingArea = () => {
       }}
     >
       <div
-        className="h-full w-full cursor-crosshair bg-background/30 backdrop-blur-sm"
+        className="h-full w-full cursor-crosshair bg-foreground/60"
         style={{
           clipPath: `polygon(0px 0px, 0px 100%, 100% 100%, 100% 0px, 0px 0px, ${startX}px ${startY}px, ${endX}px ${startY}px, ${endX}px ${endY}px, ${startX}px ${endY}px, ${startX}px ${startY}px, 0px 0px)`,
         }}

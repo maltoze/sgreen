@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import { start, stop } from '~/lib/recording'
 
 chrome.runtime.onMessage.addListener(async (message) => {
