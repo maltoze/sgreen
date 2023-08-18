@@ -3,10 +3,11 @@ import {
   Cross2Icon,
   DashboardIcon,
   DesktopIcon,
+  MarginIcon,
   PaddingIcon,
 } from '@radix-ui/react-icons'
 import clsx from 'clsx'
-import { ReactNode } from 'react'
+import { ReactNode, useRef } from 'react'
 import Draggable from 'react-draggable'
 import { Button } from '~/components/ui/button'
 import {
@@ -27,6 +28,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '~/components/ui/tooltip'
+import { tabCaptureModes } from '~/constants'
 import { useStore } from '~/entries/store'
 import { RecordingMode } from '~/types'
 
@@ -52,6 +54,11 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
     }))
 
   const recordingModes: RecordingModeOption[] = [
+    {
+      name: 'area',
+      label: 'Area',
+      icon: <MarginIcon className="h-5 w-5" />,
+    },
     {
       name: 'tab',
       label: 'Current Tab',
@@ -94,23 +101,32 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
   ]
 
   function handleStart() {
-    if (recordingMode === 'tab') {
-      useStore.setState({ showCountdown: true })
-    } else {
-      chrome.runtime.sendMessage({
-        type: 'start-recording',
-        target: 'background',
-        data: {
-          recordingMode,
-        },
-      })
-      onClose()
+    switch (recordingMode) {
+      case 'area':
+      case 'tab':
+        useStore.setState({ showCountdown: true })
+        break
+      default:
+        chrome.runtime.sendMessage({
+          type: 'start-recording',
+          target: 'background',
+          data: {
+            recordingMode,
+          },
+        })
+        onClose()
+        break
     }
   }
 
+  const draggableNodeRef = useRef<HTMLDivElement>(null)
+
   return (
-    <Draggable cancel="button">
-      <span className="fixed bottom-4 left-1/2 z-[2147483646]">
+    <Draggable cancel="button" nodeRef={draggableNodeRef}>
+      <div
+        ref={draggableNodeRef}
+        className="fixed bottom-4 left-1/2 z-[2147483646]"
+      >
         <div className="flex -translate-x-1/2 space-x-2 rounded-xl bg-background/50 p-1.5 shadow-[0_1px_2px_0px_rgb(0_0_0_/0.1),0_-1px_2px_-1px_rgb(0_0_0_/0.1)] backdrop-blur">
           <div className="flex items-center">
             <Button variant="ghost" size="sm" onClick={onClose}>
@@ -152,7 +168,7 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
                   variant="ghost"
                   size="sm"
                   className="inline-flex select-none items-center space-x-1"
-                  disabled={recordingMode !== 'tab'}
+                  disabled={!tabCaptureModes.includes(recordingMode)}
                 >
                   <span>Options</span>
                   <CaretDownIcon className="h-5 w-5" />
@@ -232,7 +248,7 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
             </TooltipProvider>
           </div>
         </div>
-      </span>
+      </div>
     </Draggable>
   )
 }

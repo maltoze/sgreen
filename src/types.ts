@@ -11,6 +11,12 @@ export interface RecordingOptions {
   showKeystrokes: boolean
   scrollbarHidden: boolean
   recordingMode: RecordingMode
+  area: {
+    x: number
+    y: number
+    width: number
+    height: number
+  }
 }
 
 export interface ChromeRuntimeMessage<T> {
@@ -18,4 +24,4 @@ export interface ChromeRuntimeMessage<T> {
   data?: T
   target?: string
 }
-export type RecordingMode = 'tab' | 'desktop' | 'application'
+export type RecordingMode = 'tab' | 'desktop' | 'application' | 'area'

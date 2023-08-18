@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { tabCaptureModes } from '~/constants'
 import { start } from '~/lib/recording'
 import { ChromeRuntimeMessage, RecordingOptions } from '~/types'
 import { setIsRecording, useStore } from '../../store'
 import Controlbar from './components/Controlbar'
 import Countdown from './components/Countdown'
+import SelectingArea from './components/SelectingArea'
 import StrokeKeysDisplay from './components/StrokeKeysDisplay'
 import useScrollbar from './hooks/use-scrollbar'
 
@@ -22,6 +24,7 @@ function App({ appRoot }: AppProps) {
     showCountdown,
     isRecording,
     countdown,
+    area,
   } = useStore((state) => ({
     scrollbarHidden: state.scrollbarHidden,
     audio: state.audio,
@@ -30,6 +33,7 @@ function App({ appRoot }: AppProps) {
     showCountdown: state.showCountdown,
     isRecording: state.isRecording,
     countdown: state.countdown,
+    area: state.area,
   }))
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -71,7 +75,7 @@ function App({ appRoot }: AppProps) {
           break
         case 'start-recording':
           setIsRecording(true)
-          recordingMode !== 'tab' &&
+          !tabCaptureModes.includes(recordingMode) &&
             message.data &&
             start(message.data, () => setIsRecording(false))
           break
@@ -127,16 +131,11 @@ function App({ appRoot }: AppProps) {
           width: window.innerWidth,
           height: window.innerHeight,
           recordingMode,
+          ...(recordingMode === 'area' ? { area } : {}),
         },
       })
-      useStore.setState({
-        x: 0,
-        y: 0,
-        width: window.innerWidth,
-        height: window.innerHeight,
-      })
     }, recordingDelay)
-  }, [audio, recordingMode])
+  }, [audio, recordingMode, area])
 
   return (
     <>
@@ -150,6 +149,7 @@ function App({ appRoot }: AppProps) {
           onClose={() => setShowControlbar(false)}
         />
       )}
+      {recordingMode === 'area' && <SelectingArea />}
     </>
   )
 }

@@ -1,24 +1,41 @@
 import fixWebmDuration from 'fix-webm-duration'
+import { defaultRecordingMode, tabCaptureModes } from '~/constants'
 import { RecordingOptions } from '~/types'
 
 let recorder: MediaRecorder | undefined
 let data: Blob[] = []
 let startTime: number
+let media: MediaStream | undefined
+const frameRate = 30
+const bitRate = 12 * 1024 * 1024
+
+function getChromeMediaSource(
+  recordingMode: RecordingOptions['recordingMode'],
+) {
+  return tabCaptureModes.includes(recordingMode) ? 'tab' : 'desktop'
+}
 
 export async function start(
-  { streamId, width, height, audio, recordingMode = 'tab' }: RecordingOptions,
+  {
+    streamId,
+    width,
+    height,
+    audio,
+    recordingMode = defaultRecordingMode,
+    area,
+  }: RecordingOptions,
   callback?: () => void,
 ) {
   if (recorder?.state === 'recording') {
     throw new Error('Called startRecording while recording is in progress.')
   }
-  console.table({ streamId, width, height, audio, recordingMode })
+  const chromeMediaSource = getChromeMediaSource(recordingMode)
 
   const videoConstraints = {
     mandatory: {
-      chromeMediaSource: recordingMode,
+      chromeMediaSource,
       chromeMediaSourceId: streamId,
-      minFrameRate: 30,
+      minFrameRate: frameRate,
     },
   }
   if (width) {
@@ -34,12 +51,12 @@ export async function start(
     videoConstraints.mandatory.maxHeight = height
   }
 
-  const media = await navigator.mediaDevices.getUserMedia({
+  media = await navigator.mediaDevices.getUserMedia({
     audio: audio
       ? {
           // @ts-ignore
           mandatory: {
-            chromeMediaSource: recordingMode,
+            chromeMediaSource,
             chromeMediaSourceId: streamId,
           },
         }
@@ -54,11 +71,43 @@ export async function start(
     source.connect(output.destination)
   }
 
-  // Start recording.
-  recorder = new MediaRecorder(media, {
-    mimeType: 'video/webm',
-    // videoBitsPerSecond: 12 * 1024 * 1024,
-  })
+  if (recordingMode === 'area') {
+    const canvas = document.createElement('canvas')
+    canvas.width = area.width
+    canvas.height = area.height
+    const context = canvas.getContext('2d')
+    if (!context) throw new Error('Could not get canvas context.')
+    const video = document.createElement('video')
+    video.srcObject = media
+    video.addEventListener('play', () => {
+      const drawFrame = () => {
+        context.drawImage(
+          video,
+          area.x,
+          area.y,
+          area.width,
+          area.height,
+          0,
+          0,
+          area.width,
+          area.height,
+        )
+      }
+      drawFrame()
+      setInterval(drawFrame, 1000 / frameRate)
+    })
+    video.play()
+    const areaMedia = canvas.captureStream(frameRate)
+    recorder = new MediaRecorder(areaMedia, {
+      mimeType: 'video/webm',
+      // videoBitsPerSecond: bitRate,
+    })
+  } else {
+    recorder = new MediaRecorder(media, {
+      mimeType: 'video/webm',
+      // videoBitsPerSecond: bitRate,
+    })
+  }
   recorder.ondataavailable = (event) => data.push(event.data)
   recorder.onstop = async () => {
     const duration = Date.now() - startTime
@@ -88,4 +137,5 @@ export async function stop() {
 
   // Stopping the tracks makes sure the recording icon in the tab is removed.
   recorder?.stream.getTracks().forEach((t) => t.stop())
+  media?.getTracks().forEach((t) => t.stop())
 }
