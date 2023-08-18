@@ -25,7 +25,8 @@
       "error",
       { "varsIgnorePattern": "^_", "argsIgnorePattern": "^_" }
     ],
-    "@typescript-eslint/ban-ts-comment": "off"
+    "@typescript-eslint/ban-ts-comment": "off",
+    "react/prop-types": [2, { "ignore": ["className"] }]
   },
   "settings": {
     "react": {
