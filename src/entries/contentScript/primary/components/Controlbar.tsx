@@ -1,7 +1,6 @@
 import {
   CaretDownIcon,
   Cross2Icon,
-  DashboardIcon,
   DesktopIcon,
   MarginIcon,
   PaddingIcon,
