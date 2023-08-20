@@ -106,6 +106,10 @@ export async function start(
   let recorderMedia = media
   if (recordingMode === 'area') {
     recorderMedia = createAreaRecorderMediaStream(area)
+    const audioTracks = media.getAudioTracks()
+    if (audioTracks.length > 0) {
+      recorderMedia.addTrack(audioTracks[0])
+    }
   }
 
   recorder = new MediaRecorder(recorderMedia, {

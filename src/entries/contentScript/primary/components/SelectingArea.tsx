@@ -47,12 +47,19 @@ const SelectingArea = () => {
   const endX = Math.max(startPos.x, endPos.x)
   const endY = Math.max(startPos.y, endPos.y)
 
+  function handleOnContextMenu(e: React.MouseEvent) {
+    e.preventDefault()
+    setStartPos({ x: 0, y: 0 })
+    setEndPos({ x: 0, y: 0 })
+  }
+
   return (
     <div
       className="fixed inset-0 z-[2147483645]"
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
+      onContextMenu={handleOnContextMenu}
       style={{
         // to prevent clipPath from affecting pointer events during selection
         clipPath: !isSelecting

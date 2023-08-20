@@ -25,6 +25,7 @@ function App({ appRoot }: AppProps) {
     isRecording,
     countdown,
     area,
+    showSelectingArea,
   } = useStore((state) => ({
     scrollbarHidden: state.scrollbarHidden,
     audio: state.audio,
@@ -33,6 +34,7 @@ function App({ appRoot }: AppProps) {
     showCountdown: state.showCountdown,
     isRecording: state.isRecording,
     countdown: state.countdown,
+    showSelectingArea: state.showSelectingArea,
     area: state.area,
   }))
 
@@ -72,6 +74,11 @@ function App({ appRoot }: AppProps) {
       switch (message.type) {
         case 'show-controlbar':
           setShowControlbar(true)
+          if (recordingMode === 'area') {
+            useStore.setState({
+              showSelectingArea: true,
+            })
+          }
           break
         case 'start-recording':
           setIsRecording(true)
@@ -81,7 +88,8 @@ function App({ appRoot }: AppProps) {
           break
         case 'stop-recording':
           setIsRecording(false)
-          recordingMode === 'tab' &&
+          useStore.setState({ showSelectingArea: false })
+          tabCaptureModes.includes(recordingMode) &&
             window.removeEventListener('keydown', handleKeyDown)
           break
         default:
@@ -100,7 +108,11 @@ function App({ appRoot }: AppProps) {
   useScrollbar({ isRecording, scrollbarHidden })
 
   useEffect(() => {
-    if (showKeystrokes && isRecording && recordingMode === 'tab') {
+    if (
+      showKeystrokes &&
+      isRecording &&
+      tabCaptureModes.includes(recordingMode)
+    ) {
       window.addEventListener('keydown', handleKeyDown)
       return () => {
         window.removeEventListener('keydown', handleKeyDown)
@@ -137,6 +149,11 @@ function App({ appRoot }: AppProps) {
     }, recordingDelay)
   }, [audio, recordingMode, area])
 
+  function handleOnClose() {
+    setShowControlbar(false)
+    useStore.setState({ showSelectingArea: false })
+  }
+
   return (
     <>
       {showCountdown && (
@@ -144,12 +161,9 @@ function App({ appRoot }: AppProps) {
       )}
       <StrokeKeysDisplay strokeKeys={strokeKeys} />
       {showControlbar && (
-        <Controlbar
-          appRoot={appRoot}
-          onClose={() => setShowControlbar(false)}
-        />
+        <Controlbar appRoot={appRoot} onClose={handleOnClose} />
       )}
-      {recordingMode === 'area' && <SelectingArea />}
+      {showSelectingArea && <SelectingArea />}
     </>
   )
 }

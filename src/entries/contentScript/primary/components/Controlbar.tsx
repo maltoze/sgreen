@@ -116,7 +116,15 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
   const draggableNodeRef = useRef<HTMLDivElement>(null)
 
   return (
-    <Draggable cancel="button" nodeRef={draggableNodeRef}>
+    <Draggable
+      cancel="button"
+      nodeRef={draggableNodeRef}
+      // TODO
+      // left: -(window.innerWidth / 2 - boundingRect.width / 2)
+      // right: window.innerWidth / 2 - boundingRect.width / 2
+      // top: window.innerHeight - boundingRect.height - 16
+      bounds={{ bottom: 16 }}
+    >
       <div
         ref={draggableNodeRef}
         className="fixed bottom-4 left-1/2 z-[2147483646]"
@@ -137,7 +145,10 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
                       variant="ghost"
                       size="sm"
                       onClick={() =>
-                        useStore.setState({ recordingMode: mode.name })
+                        useStore.setState({
+                          recordingMode: mode.name,
+                          showSelectingArea: mode.name === 'area',
+                        })
                       }
                       className={clsx({
                         'cursor-default text-green-500 hover:bg-transparent hover:text-green-500':
