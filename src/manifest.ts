@@ -25,7 +25,15 @@ const manifest: Partial<chrome.runtime.ManifestV3> = {
     page: 'src/entries/options/index.html',
     open_in_tab: true,
   },
-  permissions: ['tabCapture', 'activeTab'],
+  permissions: [
+    'tabCapture',
+    'activeTab',
+    'offscreen',
+    'storage',
+    'desktopCapture',
+    // chrome.windows
+    'tabs',
+  ],
 }
 
 export function getManifest(): chrome.runtime.ManifestV3 {
@@ -35,6 +43,7 @@ export function getManifest(): chrome.runtime.ManifestV3 {
     name: pkg.displayName ?? pkg.name,
     version: pkg.version,
     manifest_version: 3,
+    minimum_chrome_version: '116',
     ...manifest,
   }
 }

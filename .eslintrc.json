@@ -3,7 +3,8 @@
   "env": {
     "browser": true,
     "node": true,
-    "webextensions": true
+    "webextensions": true,
+    "serviceworker": true
   },
   "plugins": ["@typescript-eslint"],
   "extends": [
@@ -19,7 +20,13 @@
   },
   "ignorePatterns": ["build/**"],
   "rules": {
-    "react/react-in-jsx-scope": "off"
+    "react/react-in-jsx-scope": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      { "varsIgnorePattern": "^_", "argsIgnorePattern": "^_" }
+    ],
+    "@typescript-eslint/ban-ts-comment": "off",
+    "react/prop-types": [2, { "ignore": ["className"] }]
   },
   "settings": {
     "react": {

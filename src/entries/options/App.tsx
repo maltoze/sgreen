@@ -1,10 +1,9 @@
-import PageContent from "~/components/PageContent";
 import "./App.css";
 
 function App() {
   return (
     <main>
-      <PageContent>Options</PageContent>
+      <p>Helloooo</p>
     </main>
   );
 }
