@@ -30,10 +30,10 @@ function createAreaRecorderMediaStream(area: RecordingOptions['area']) {
     const drawFrame = () => {
       context.drawImage(
         video,
-        area.x,
-        area.y,
-        area.width,
-        area.height,
+        area.x * window.devicePixelRatio,
+        area.y * window.devicePixelRatio,
+        area.width * window.devicePixelRatio,
+        area.height * window.devicePixelRatio,
         0,
         0,
         area.width,
@@ -71,8 +71,14 @@ export async function start(
       chromeMediaSource,
       chromeMediaSourceId: streamId,
       minFrameRate: frameRate,
-      ...(width && { minWidth: width, maxWidth: width }),
-      ...(height && { minHeight: height, maxHeight: height }),
+      ...(width && {
+        minWidth: width * window.devicePixelRatio,
+        maxWidth: width * window.devicePixelRatio,
+      }),
+      ...(height && {
+        minHeight: height * window.devicePixelRatio,
+        maxHeight: height * window.devicePixelRatio,
+      }),
     },
   }
 
