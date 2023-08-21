@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { tabCaptureModes } from '~/constants'
+import { keyboardCodes, tabCaptureModes } from '~/constants'
 import { start } from '~/lib/recording'
+import { isMac, isWindows } from '~/lib/utils'
 import { ChromeRuntimeMessage, RecordingOptions } from '~/types'
 import { setIsRecording, useStore } from '../../store'
 import Controlbar from './components/Controlbar'
@@ -10,6 +11,7 @@ import StrokeKeysDisplay from './components/StrokeKeysDisplay'
 import useScrollbar from './hooks/use-scrollbar'
 
 const clearRecordTimeout = 3000
+const metaKey = isMac() ? '⌘' : isWindows() ? '⊞' : 'Meta'
 
 interface AppProps {
   appRoot: ShadowRoot
@@ -54,11 +56,20 @@ function App({ appRoot }: AppProps) {
         keyboardModifiers[modifier as keyof typeof keyboardModifiers],
     )
 
+    const replaceMetaKey = () => {
+      if (activeModifiers.includes('Meta')) {
+        activeModifiers.splice(activeModifiers.indexOf('Meta'), 1, metaKey)
+      }
+    }
+
     if (activeModifiers.includes(e.key)) {
+      replaceMetaKey()
       setStrokeKeys(activeModifiers)
     } else {
-      setStrokeKeys([...activeModifiers, e.key])
+      replaceMetaKey()
+      setStrokeKeys([...activeModifiers, keyboardCodes[e.code] ?? e.code])
     }
+
     strokeTimeoutRef.current = setTimeout(() => {
       setStrokeKeys([])
     }, clearRecordTimeout)
