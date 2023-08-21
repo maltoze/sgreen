@@ -3,7 +3,6 @@ import pkg from '../package.json'
 const manifest: Partial<chrome.runtime.ManifestV3> = {
   action: {
     default_icon: 'icon.png',
-    // default_popup: 'src/entries/popup/index.html',
   },
   background: {
     service_worker: 'src/entries/background/main.ts',
