@@ -7,7 +7,8 @@ let data: Blob[] = []
 let startTime: number
 let media: MediaStream | undefined
 const frameRate = 30
-const bitRate = 12 * 1024 * 1024
+const bitRate = 8 * 1024 * 1024
+const devicePixelRatio = window.devicePixelRatio || 1
 
 function getChromeMediaSource(
   recordingMode: RecordingOptions['recordingMode'],
@@ -30,10 +31,10 @@ function createAreaRecorderMediaStream(area: RecordingOptions['area']) {
     const drawFrame = () => {
       context.drawImage(
         video,
-        area.x * window.devicePixelRatio,
-        area.y * window.devicePixelRatio,
-        area.width * window.devicePixelRatio,
-        area.height * window.devicePixelRatio,
+        area.x * devicePixelRatio,
+        area.y * devicePixelRatio,
+        area.width * devicePixelRatio + 1,  // to prevent a black line on the right side
+        area.height * devicePixelRatio,
         0,
         0,
         area.width,
@@ -72,12 +73,12 @@ export async function start(
       chromeMediaSourceId: streamId,
       minFrameRate: frameRate,
       ...(width && {
-        minWidth: width * window.devicePixelRatio,
-        maxWidth: width * window.devicePixelRatio,
+        minWidth: width * devicePixelRatio,
+        maxWidth: width * devicePixelRatio,
       }),
       ...(height && {
-        minHeight: height * window.devicePixelRatio,
-        maxHeight: height * window.devicePixelRatio,
+        minHeight: height * devicePixelRatio,
+        maxHeight: height * devicePixelRatio,
       }),
     },
   }
