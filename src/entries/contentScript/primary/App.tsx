@@ -14,7 +14,7 @@ const clearRecordTimeout = 3000
 const metaKey = isMac() ? '⌘' : isWindows() ? '⊞' : 'Meta'
 
 interface AppProps {
-  appRoot: ShadowRoot
+  appRoot?: ShadowRoot
 }
 
 function App({ appRoot }: AppProps) {
@@ -75,7 +75,7 @@ function App({ appRoot }: AppProps) {
     }, clearRecordTimeout)
   }, [])
 
-  const [showControlbar, setShowControlbar] = useState(false)
+  const [showControlbar, setShowControlbar] = useState(true)
   useEffect(() => {
     async function handleChromeMessage(
       message: ChromeRuntimeMessage<RecordingOptions>,

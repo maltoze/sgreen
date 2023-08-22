@@ -15,6 +15,7 @@ export default defineConfig(() => {
           html: [
             'src/entries/background/offscreen.html',
             'src/entries/tabs/main.html',
+            'src/entries/tabs/content.html',
           ],
         },
       }),

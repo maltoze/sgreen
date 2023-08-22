@@ -38,11 +38,14 @@ interface RecordingModeOption {
 }
 
 interface ControlbarProps {
-  appRoot: ShadowRoot
+  appRoot?: ShadowRoot | null
   onClose: () => void
 }
 
-export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
+export default function Controlbar({
+  appRoot = null,
+  onClose,
+}: ControlbarProps) {
   const { audio, showKeystrokes, scrollbarHidden, recordingMode, countdown } =
     useStore((state) => ({
       audio: state.audio,
