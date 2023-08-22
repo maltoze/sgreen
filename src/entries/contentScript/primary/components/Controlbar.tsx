@@ -43,14 +43,21 @@ interface ControlbarProps {
 }
 
 export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
-  const { audio, showKeystrokes, scrollbarHidden, recordingMode, countdown } =
-    useStore((state) => ({
-      audio: state.audio,
-      showKeystrokes: state.showKeystrokes,
-      scrollbarHidden: state.scrollbarHidden,
-      recordingMode: state.recordingMode,
-      countdown: state.countdown,
-    }))
+  const {
+    audio,
+    showKeystrokes,
+    scrollbarHidden,
+    recordingMode,
+    countdown,
+    showMouseClicks,
+  } = useStore((state) => ({
+    audio: state.audio,
+    showKeystrokes: state.showKeystrokes,
+    scrollbarHidden: state.scrollbarHidden,
+    recordingMode: state.recordingMode,
+    countdown: state.countdown,
+    showMouseClicks: state.showMouseClicks,
+  }))
 
   const recordingModes: RecordingModeOption[] = [
     {
@@ -84,6 +91,13 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
       checked: showKeystrokes,
       onCheckedChange: (checked: boolean) =>
         useStore.setState({ showKeystrokes: checked }),
+    },
+    {
+      name: 'showMouseClicks',
+      label: 'Show Mouse Clicks',
+      checked: showMouseClicks,
+      onCheckedChange: (checked: boolean) =>
+        useStore.setState({ showMouseClicks: checked }),
     },
     {
       name: 'scrollbarHidden',

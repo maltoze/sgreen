@@ -14,6 +14,7 @@ export interface IState {
   showSelectingArea: boolean
   recordingMode: RecordingMode
   countdown: number
+  showMouseClicks: boolean
   area: {
     x: number
     y: number
@@ -28,6 +29,7 @@ const persistKeys = [
   'audio',
   'isRecording',
   'countdown',
+  'showMouseClicks',
 ]
 
 export const useStore = create<IState>()(
@@ -48,6 +50,7 @@ export const useStore = create<IState>()(
         width: 0,
         height: 0,
       },
+      showMouseClicks: false,
     }),
     {
       name: localStorageName,

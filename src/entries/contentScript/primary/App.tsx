@@ -6,6 +6,7 @@ import { ChromeRuntimeMessage, RecordingOptions } from '~/types'
 import { setIsRecording, useStore } from '../../store'
 import Controlbar from './components/Controlbar'
 import Countdown from './components/Countdown'
+import MouseClick from './components/MouseClick'
 import SelectingArea from './components/SelectingArea'
 import StrokeKeysDisplay from './components/StrokeKeysDisplay'
 import useScrollbar from './hooks/use-scrollbar'
@@ -28,6 +29,7 @@ function App({ appRoot }: AppProps) {
     countdown,
     area,
     showSelectingArea,
+    showMouseClicks,
   } = useStore((state) => ({
     scrollbarHidden: state.scrollbarHidden,
     audio: state.audio,
@@ -38,6 +40,7 @@ function App({ appRoot }: AppProps) {
     countdown: state.countdown,
     showSelectingArea: state.showSelectingArea,
     area: state.area,
+    showMouseClicks: state.showMouseClicks,
   }))
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -114,7 +117,7 @@ function App({ appRoot }: AppProps) {
   }, [handleKeyDown, recordingMode])
 
   const [strokeKeys, setStrokeKeys] = useState<string[]>([])
-  const strokeTimeoutRef = useRef<number | null>(null)
+  const strokeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useScrollbar({ isRecording, scrollbarHidden })
 
@@ -175,6 +178,7 @@ function App({ appRoot }: AppProps) {
         <Controlbar appRoot={appRoot} onClose={handleOnClose} />
       )}
       {showSelectingArea && <SelectingArea />}
+      {showMouseClicks && isRecording && <MouseClick />}
     </>
   )
 }

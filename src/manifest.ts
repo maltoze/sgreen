@@ -3,6 +3,10 @@ import pkg from '../package.json'
 const manifest: Partial<chrome.runtime.ManifestV3> = {
   action: {
     default_icon: 'icon.png',
+    default_title:
+      process.env.NODE_ENV === 'development'
+        ? 'Sgreen - dev'
+        : 'Sgreen: Record Screen',
   },
   background: {
     service_worker: 'src/entries/background/main.ts',
