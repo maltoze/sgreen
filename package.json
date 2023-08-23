@@ -17,6 +17,7 @@
     "@samrum/vite-plugin-web-extension": "^5.0.0",
     "@thedutchcoder/postcss-rem-to-px": "^0.0.2",
     "@types/chrome": "^0.0.243",
+    "@types/node": "^20.5.2",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.1",
     "@types/serviceworker": "^0.0.72",
