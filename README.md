@@ -14,9 +14,9 @@ Sgreen offers the following primary screen recording modes:
 
 Sgreen also includes the following enhanced features (only in Area and Current Tab modes):
 
-- **Show Keystrokes**: Highlight pressed keys during recording.
-- **Show Mouse Clicks**: Highlight mouse clicks during recording.
-- **Countdown Timer**: Set up a countdown before recording starts to ensure thorough preparation.
+- ⌨️ **Show Keystrokes**: Highlight pressed keys during recording.
+- 🖱️️ **Show Mouse Clicks**: Highlight mouse clicks during recording.
+- ⏱️ **Countdown Timer**: Set up a countdown before recording starts to ensure thorough preparation.
 
 ## Usage
 
