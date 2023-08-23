@@ -6,7 +6,7 @@ import {
   PaddingIcon,
 } from '@radix-ui/react-icons'
 import clsx from 'clsx'
-import { ReactNode, useRef } from 'react'
+import { ReactNode, useEffect, useRef, useState } from 'react'
 import Draggable from 'react-draggable'
 import { Button } from '~/components/ui/button'
 import {
@@ -128,22 +128,37 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
   }
 
   const draggableNodeRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [containerBoundingRect, setContainerBoundingRect] = useState<DOMRect>()
+  useEffect(() => {
+    const container = containerRef.current
+    if (container) {
+      setContainerBoundingRect(container.getBoundingClientRect())
+    }
+  }, [])
 
   return (
     <Draggable
       cancel="button"
       nodeRef={draggableNodeRef}
-      // TODO
-      // left: -(window.innerWidth / 2 - boundingRect.width / 2)
-      // right: window.innerWidth / 2 - boundingRect.width / 2
-      // top: window.innerHeight - boundingRect.height - 16
-      bounds={{ bottom: 16 }}
+      bounds={{
+        bottom: 16,
+        left: -(
+          window.innerWidth / 2 -
+          (containerBoundingRect?.width ?? 0) / 2
+        ),
+        right: window.innerWidth / 2 - (containerBoundingRect?.width ?? 0) / 2,
+        top: -(window.innerHeight - (containerBoundingRect?.height ?? 0) - 16),
+      }}
     >
       <div
         ref={draggableNodeRef}
         className="fixed bottom-4 left-1/2 z-[2147483646]"
       >
-        <div className="flex -translate-x-1/2 space-x-2 rounded-xl bg-background/50 p-1.5 shadow-[0_1px_2px_0px_rgb(0_0_0_/0.1),0_-1px_2px_-1px_rgb(0_0_0_/0.1)] backdrop-blur">
+        <div
+          className="flex -translate-x-1/2 space-x-2 rounded-xl bg-background/50 p-1.5 shadow-[0_1px_2px_0px_rgb(0_0_0_/0.1),0_-1px_2px_-1px_rgb(0_0_0_/0.1)] backdrop-blur"
+          ref={containerRef}
+        >
           <div className="flex items-center">
             <Button variant="ghost" size="sm" onClick={onClose}>
               <Cross2Icon className="h-5 w-5" />
