@@ -8,7 +8,7 @@ interface CountdownProps {
 
 export default function Countdown({ count, onFinish }: CountdownProps) {
   const [currentCount, setCurrentCount] = useState(count)
-  const intervalIdRef = useRef<number>()
+  const intervalIdRef = useRef<ReturnType<typeof setInterval>>()
 
   useEffect(() => {
     const id = setInterval(() => {
