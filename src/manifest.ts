@@ -17,7 +17,6 @@ const manifest: Partial<chrome.runtime.ManifestV3> = {
       matches: ['*://*/*'],
     },
   ],
-  host_permissions: ['*://*/*'],
   icons: {
     16: 'icon.png',
     32: 'icon.png',
