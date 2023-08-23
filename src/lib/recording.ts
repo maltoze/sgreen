@@ -6,6 +6,7 @@ let recorder: MediaRecorder | undefined
 let data: Blob[] = []
 let startTime: number
 let media: MediaStream | undefined
+
 const frameRate = 30
 const bitRate = 8 * 1024 * 1024
 const devicePixelRatio = window.devicePixelRatio || 1
@@ -33,7 +34,7 @@ function createAreaRecorderMediaStream(area: RecordingOptions['area']) {
         video,
         area.x * devicePixelRatio,
         area.y * devicePixelRatio,
-        area.width * devicePixelRatio + 1,  // to prevent a black line on the right side
+        area.width * devicePixelRatio - 2, // workaround for black line on the right side
         area.height * devicePixelRatio,
         0,
         0,
