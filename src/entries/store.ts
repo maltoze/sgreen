@@ -11,7 +11,6 @@ export interface IState {
   showKeystrokes: boolean
   showControlbar: boolean
   showCountdown: boolean
-  showSelectingArea: boolean
   recordingMode: RecordingMode
   countdown: number
   showMouseClicks: boolean
@@ -30,7 +29,6 @@ const persistKeys = [
   'isRecording',
   'countdown',
   'showMouseClicks',
-  'showSelectingArea',
   'area',
   'recordingMode',
 ]
@@ -44,7 +42,6 @@ export const useStore = create<IState>()(
       audio: false,
       showControlbar: false,
       showCountdown: false,
-      showSelectingArea: false,
       recordingMode: 'tab',
       countdown: 3,
       area: {

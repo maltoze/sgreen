@@ -28,7 +28,6 @@ function App({ appRoot }: AppProps) {
     isRecording,
     countdown,
     area,
-    showSelectingArea,
     showMouseClicks,
   } = useStore((state) => ({
     scrollbarHidden: state.scrollbarHidden,
@@ -38,7 +37,6 @@ function App({ appRoot }: AppProps) {
     showCountdown: state.showCountdown,
     isRecording: state.isRecording,
     countdown: state.countdown,
-    showSelectingArea: state.showSelectingArea,
     area: state.area,
     showMouseClicks: state.showMouseClicks,
   }))
@@ -88,11 +86,6 @@ function App({ appRoot }: AppProps) {
       switch (message.type) {
         case 'show-controlbar':
           setShowControlbar(true)
-          if (recordingMode === 'area') {
-            useStore.setState({
-              showSelectingArea: true,
-            })
-          }
           break
         case 'start-recording':
           setIsRecording(true)
@@ -102,7 +95,6 @@ function App({ appRoot }: AppProps) {
           break
         case 'stop-recording':
           setIsRecording(false)
-          useStore.setState({ showSelectingArea: false })
           tabCaptureModes.includes(recordingMode) &&
             window.removeEventListener('keydown', handleKeyDown)
           break
@@ -147,8 +139,8 @@ function App({ appRoot }: AppProps) {
     setShowControlbar(false)
 
     const recordingDelay = 100
+    setIsRecording(true)
     setTimeout(() => {
-      setIsRecording(true)
       chrome.runtime.sendMessage({
         type: 'start-recording',
         target: 'background',
@@ -165,7 +157,6 @@ function App({ appRoot }: AppProps) {
 
   function handleOnClose() {
     setShowControlbar(false)
-    useStore.setState({ showSelectingArea: false })
   }
 
   return (
@@ -173,11 +164,15 @@ function App({ appRoot }: AppProps) {
       {showCountdown && (
         <Countdown count={countdown} onFinish={startRecording} />
       )}
-      <StrokeKeysDisplay strokeKeys={strokeKeys} />
+      {isRecording && showKeystrokes && (
+        <StrokeKeysDisplay strokeKeys={strokeKeys} />
+      )}
       {showControlbar && (
         <Controlbar appRoot={appRoot} onClose={handleOnClose} />
       )}
-      {showSelectingArea && <SelectingArea />}
+      {recordingMode === 'area' && (isRecording || showControlbar) && (
+        <SelectingArea />
+      )}
       {showMouseClicks && isRecording && <MouseClick />}
     </>
   )
