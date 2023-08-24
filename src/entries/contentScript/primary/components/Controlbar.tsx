@@ -176,7 +176,6 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
                       onClick={() =>
                         useStore.setState({
                           recordingMode: mode.name,
-                          showSelectingArea: mode.name === 'area',
                         })
                       }
                       className={clsx({
