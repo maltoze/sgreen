@@ -32,6 +32,7 @@ const persistKeys = [
   'showMouseClicks',
   'showSelectingArea',
   'area',
+  'recordingMode',
 ]
 
 export const useStore = create<IState>()(
