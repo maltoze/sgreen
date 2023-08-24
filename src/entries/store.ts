@@ -19,7 +19,8 @@ export interface IState {
     y: number
     width: number
     height: number
-  }
+  },
+  enableBackground: boolean
 }
 
 const persistKeys = [
@@ -31,6 +32,7 @@ const persistKeys = [
   'showMouseClicks',
   'recordingMode',
   'area',
+  'enableBackground'
 ]
 
 export const useStore = create<IState>()(
@@ -51,6 +53,7 @@ export const useStore = create<IState>()(
       },
       showMouseClicks: false,
       showControlbar: false,
+      enableBackground: false
     }),
     {
       name: localStorageName,

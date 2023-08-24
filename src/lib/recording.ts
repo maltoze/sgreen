@@ -43,6 +43,12 @@ class Recorder {
     video.srcObject = this.media as MediaStream
     video.autoplay = true
 
+    // Draw a gradient background
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
+    gradient.addColorStop(0, '#6d28d9')
+    gradient.addColorStop(1, '#a21caf')
+    ctx.fillStyle = gradient
+
     const drawFrame = () => {
       ctx.drawImage(
         video,
@@ -59,6 +65,7 @@ class Recorder {
     }
 
     video.addEventListener('play', () => {
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
       drawFrame()
     })
 
