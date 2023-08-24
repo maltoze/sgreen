@@ -1,8 +1,12 @@
+import clsx from 'clsx'
 import React, { useCallback, useState } from 'react'
 import { useStore } from '~/entries/store'
 
 const SelectingArea = () => {
-  const area = useStore((state) => state.area)
+  const { isRecording, area } = useStore((state) => ({
+    area: state.area,
+    isRecording: state.isRecording,
+  }))
 
   const [startPos, setStartPos] = useState({ x: area?.x, y: area?.y })
   const [endPos, setEndPos] = useState({
@@ -55,7 +59,9 @@ const SelectingArea = () => {
 
   return (
     <div
-      className="fixed inset-0 z-[2147483645]"
+      className={clsx('fixed inset-0 z-[2147483645]', {
+        'pointer-events-none': isRecording,
+      })}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
