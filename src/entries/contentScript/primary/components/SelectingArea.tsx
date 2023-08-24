@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import React, { useCallback, useState } from 'react'
+import React, { useState } from 'react'
 import { useStore } from '~/entries/store'
 
 const SelectingArea = () => {
@@ -15,6 +15,41 @@ const SelectingArea = () => {
   })
 
   const [isSelecting, setIsSelecting] = useState(false)
+  const [isGrabbing, setIsGrabbing] = useState(false)
+
+  const [startGrabPos, setStartGrabPos] = useState({ x: 0, y: 0 })
+
+  function handleAreaPointerDown(e: React.PointerEvent) {
+    if (e.button !== 0) return
+    setIsGrabbing(true)
+    setStartGrabPos({ x: e.clientX, y: e.clientY })
+  }
+
+  function handleAreaPointerMove(e: React.PointerEvent) {
+    if (isGrabbing) {
+      setStartPos({
+        x: startPos.x + e.clientX - startGrabPos.x,
+        y: startPos.y + e.clientY - startGrabPos.y,
+      })
+      setEndPos({
+        x: endPos.x + e.clientX - startGrabPos.x,
+        y: endPos.y + e.clientY - startGrabPos.y,
+      })
+      setStartGrabPos({ x: e.clientX, y: e.clientY })
+    }
+  }
+
+  function handleAreaPointerUp(_e: React.PointerEvent) {
+    setIsGrabbing(false)
+    useStore.setState({
+      area: {
+        x: Math.min(startPos.x, endPos.x),
+        y: Math.min(startPos.y, endPos.y),
+        width: Math.abs(startPos.x - endPos.x),
+        height: Math.abs(startPos.y - endPos.y),
+      },
+    })
+  }
 
   function handlePointerDown(e: React.PointerEvent) {
     // Only left click
@@ -25,17 +60,27 @@ const SelectingArea = () => {
     setIsSelecting(true)
   }
 
-  const handlePointerMove = useCallback(
-    (e: React.PointerEvent) => {
-      if (isSelecting) {
-        setEndPos({ x: e.clientX, y: e.clientY })
-      }
-    },
-    [isSelecting],
-  )
+  function handlePointerMove(e: React.PointerEvent) {
+    if (isSelecting) {
+      setEndPos({ x: e.clientX, y: e.clientY })
+    }
+
+    if (isGrabbing) {
+      setStartPos({
+        x: startPos.x + e.clientX - startGrabPos.x,
+        y: startPos.y + e.clientY - startGrabPos.y,
+      })
+      setEndPos({
+        x: endPos.x + e.clientX - startGrabPos.x,
+        y: endPos.y + e.clientY - startGrabPos.y,
+      })
+      setStartGrabPos({ x: e.clientX, y: e.clientY })
+    }
+  }
 
   function handlePointerUp() {
     setIsSelecting(false)
+    setIsGrabbing(false)
     useStore.setState({
       area: {
         x: Math.min(startPos.x, endPos.x),
@@ -58,28 +103,48 @@ const SelectingArea = () => {
   }
 
   return (
-    <div
-      className={clsx('fixed inset-0 z-[2147483645]', {
-        'pointer-events-none': isRecording,
-      })}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onContextMenu={handleOnContextMenu}
-      style={{
-        // to prevent clipPath from affecting pointer events during selection
-        clipPath: !isSelecting
-          ? `polygon(0px 0px, 0px 100%, 100% 100%, 100% 0px, 0px 0px, ${startX}px ${startY}px, ${endX}px ${startY}px, ${endX}px ${endY}px, ${startX}px ${endY}px, ${startX}px ${startY}px, 0px 0px)`
-          : undefined,
-      }}
-    >
+    <>
       <div
-        className="h-full w-full cursor-crosshair bg-foreground/60"
+        className={clsx('fixed inset-0 z-[2147483645]', {
+          'pointer-events-none': isRecording,
+        })}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onContextMenu={handleOnContextMenu}
         style={{
-          clipPath: `polygon(0px 0px, 0px 100%, 100% 100%, 100% 0px, 0px 0px, ${startX}px ${startY}px, ${endX}px ${startY}px, ${endX}px ${endY}px, ${startX}px ${endY}px, ${startX}px ${startY}px, 0px 0px)`,
+          // to prevent clipPath from affecting pointer events during selection
+          clipPath: !isSelecting
+            ? `polygon(0px 0px, 0px 100%, 100% 100%, 100% 0px, 0px 0px, ${startX}px ${startY}px, ${endX}px ${startY}px, ${endX}px ${endY}px, ${startX}px ${endY}px, ${startX}px ${startY}px, 0px 0px)`
+            : undefined,
+        }}
+      >
+        <div
+          className="h-full w-full cursor-crosshair bg-foreground/60"
+          style={{
+            clipPath: `polygon(0px 0px, 0px 100%, 100% 100%, 100% 0px, 0px 0px, ${startX}px ${startY}px, ${endX}px ${startY}px, ${endX}px ${endY}px, ${startX}px ${endY}px, ${startX}px ${startY}px, 0px 0px)`,
+          }}
+        ></div>
+      </div>
+      <div
+        className={clsx('fixed z-[2147483645] left-0 top-0', {
+          'pointer-events-none': isSelecting || isRecording,
+          'cursor-grab': !isGrabbing,
+          'pointer-events-auto cursor-grabbing': isGrabbing,
+        })}
+        onPointerDown={handleAreaPointerDown}
+        onPointerMove={handleAreaPointerMove}
+        onPointerUp={handleAreaPointerUp}
+        onDragStart={(e) => {
+          e.preventDefault()
+        }}
+        style={{
+          transform: `translate(${startX}px, ${startY}px)`,
+          width: `${endX - startX}px`,
+          height: `${endY - startY}px`,
         }}
       ></div>
-    </div>
+    </>
   )
 }
 
