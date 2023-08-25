@@ -2,6 +2,8 @@ import clsx from 'clsx'
 import React, { useState } from 'react'
 import { useStore } from '~/entries/store'
 
+const outlineWidth = 0
+
 const SelectingArea = () => {
   const { isRecording, area } = useStore((state) => ({
     area: state.area,
@@ -122,16 +124,27 @@ const SelectingArea = () => {
         <div
           className="h-full w-full cursor-crosshair bg-foreground/60"
           style={{
-            clipPath: `polygon(0px 0px, 0px 100%, 100% 100%, 100% 0px, 0px 0px, ${startX}px ${startY}px, ${endX}px ${startY}px, ${endX}px ${endY}px, ${startX}px ${endY}px, ${startX}px ${startY}px, 0px 0px)`,
+            clipPath: `polygon(0px 0px, 0px 100%, 100% 100%, 100% 0px, 0px 0px, ${
+              startX - outlineWidth
+            }px ${startY - outlineWidth}px, ${endX + outlineWidth}px ${
+              startY - outlineWidth
+            }px, ${endX + outlineWidth}px ${endY + outlineWidth}px, ${
+              startX - outlineWidth
+            }px ${endY + outlineWidth}px, ${startX - outlineWidth}px ${
+              startY - outlineWidth
+            }px, 0px 0px)`,
           }}
         ></div>
       </div>
       <div
-        className={clsx('fixed z-[2147483645] left-0 top-0', {
-          'pointer-events-none': isSelecting || isRecording,
-          'cursor-grab': !isGrabbing,
-          'pointer-events-auto cursor-grabbing': isGrabbing,
-        })}
+        className={clsx(
+          'fixed left-0 top-0 z-[2147483645] outline-dashed outline-2 outline-background',
+          {
+            'pointer-events-none': isSelecting || isRecording,
+            'cursor-grab': !isGrabbing,
+            'pointer-events-auto cursor-grabbing': isGrabbing,
+          }
+        )}
         onPointerDown={handleAreaPointerDown}
         onPointerMove={handleAreaPointerMove}
         onPointerUp={handleAreaPointerUp}
