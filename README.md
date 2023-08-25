@@ -36,4 +36,4 @@ If you encounter any issues with Sgreen, please [open an issue](https://github.c
 
 ## License
 
-Sgreen is licensed under the AGPL-3.0 license. See `LICENSE` for details.
+Sgreen is licensed under the AGPL-3.0 license. See [LICENSE](./LICENSE) for details.
