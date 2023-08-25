@@ -57,7 +57,6 @@ function App({ appRoot }: AppProps) {
           break
         case 'stop-recording':
           setIsRecording(false)
-          setShowControlbar(true)
           !tabCaptureModes.includes(recordingMode) && stop()
           break
         default:
