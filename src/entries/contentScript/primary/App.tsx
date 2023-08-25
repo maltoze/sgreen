@@ -42,7 +42,7 @@ function App({ appRoot }: AppProps) {
     async function handleChromeMessage(
       message: ChromeRuntimeMessage<RecordingOptions>,
       _sender: chrome.runtime.MessageSender,
-      _sendResponse: (response?: unknown) => void,
+      _sendResponse: (response?: unknown) => void
     ) {
       switch (message.type) {
         case 'show-controlbar':
@@ -98,7 +98,11 @@ function App({ appRoot }: AppProps) {
   return (
     <>
       {showCountdown && (
-        <Countdown count={countdown} onFinish={startRecording} />
+        <Countdown
+          count={countdown}
+          onFinish={startRecording}
+          key={countdown}
+        />
       )}
       {isRecording && showKeystrokes && <StrokeKeysDisplay />}
       {showControlbar && (

@@ -18,7 +18,7 @@ export default function Countdown({ count, onFinish }: CountdownProps) {
     intervalIdRef.current = id
 
     return () => clearInterval(id)
-  }, [count, onFinish])
+  }, [onFinish])
 
   useEffect(() => {
     if (currentCount === 0) {

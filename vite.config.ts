@@ -9,15 +9,17 @@ export default defineConfig(() => {
   return {
     plugins: [
       react(),
-      webExtension({
-        manifest: getManifest(),
-        additionalInputs: {
-          html: [
-            'src/entries/background/offscreen.html',
-            'src/entries/tabs/main.html',
-          ],
-        },
-      }),
+      !process.env.DISABLE_WEBEXTENSION
+        ? webExtension({
+            manifest: getManifest(),
+            additionalInputs: {
+              html: [
+                'src/entries/background/offscreen.html',
+                'src/entries/tabs/main.html',
+              ],
+            },
+          })
+        : undefined,
     ],
     resolve: {
       alias: {
@@ -26,6 +28,6 @@ export default defineConfig(() => {
     },
     server: {
       port: 4173,
-    }
+    },
   }
 })

@@ -38,7 +38,7 @@ interface RecordingModeOption {
 }
 
 interface ControlbarProps {
-  appRoot: ShadowRoot
+  appRoot?: ShadowRoot
   onClose: () => void
 }
 
