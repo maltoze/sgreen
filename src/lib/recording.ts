@@ -35,7 +35,7 @@ function createAreaRecorderMediaStream(area: RecordingOptions['area']) {
         area.x * devicePixelRatio,
         area.y * devicePixelRatio,
         area.width * devicePixelRatio - 2, // workaround for black line on the right side
-        area.height * devicePixelRatio,
+        area.height * devicePixelRatio - 1,
         0,
         0,
         area.width,
