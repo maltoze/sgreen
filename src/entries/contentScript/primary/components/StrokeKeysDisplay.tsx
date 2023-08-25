@@ -1,18 +1,71 @@
 import clsx from 'clsx'
 import { motion } from 'framer-motion'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { keyboardCodes } from '~/constants'
 import { useStore } from '~/entries/store'
+import { isMac, isWindows } from '~/lib/utils'
 
-interface StrokeKeysDisplayProps {
-  strokeKeys: string[]
-}
+const clearRecordTimeout = 3000
+const metaKey = isMac() ? '⌘' : isWindows() ? '⊞' : 'Meta'
 
-export default function StrokeKeysDisplay({
-  strokeKeys,
-}: StrokeKeysDisplayProps) {
+export default function StrokeKeysDisplay() {
   const { recordingMode, area } = useStore((state) => ({
     recordingMode: state.recordingMode,
     area: state.area,
   }))
+
+  const [strokeKeys, setStrokeKeys] = useState<string[]>([])
+  const strokeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (strokeTimeoutRef.current) {
+      clearTimeout(strokeTimeoutRef.current)
+    }
+
+    const keyboardModifiers = {
+      Shift: e.shiftKey,
+      Control: e.ctrlKey,
+      Alt: e.altKey,
+      Meta: e.metaKey,
+    }
+    const activeModifiers = Object.keys(keyboardModifiers).filter(
+      (modifier) =>
+        keyboardModifiers[modifier as keyof typeof keyboardModifiers],
+    )
+
+    const replaceMetaKey = () => {
+      if (activeModifiers.includes('Meta')) {
+        activeModifiers.splice(activeModifiers.indexOf('Meta'), 1, metaKey)
+      }
+    }
+
+    if (activeModifiers.includes(e.key)) {
+      replaceMetaKey()
+      setStrokeKeys(activeModifiers)
+    } else {
+      replaceMetaKey()
+      setStrokeKeys([...activeModifiers, keyboardCodes[e.code] ?? e.code])
+    }
+
+    strokeTimeoutRef.current = setTimeout(() => {
+      setStrokeKeys([])
+    }, clearRecordTimeout)
+  }, [])
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [handleKeyDown])
+
+  useEffect(() => {
+    return () => {
+      if (strokeTimeoutRef.current) {
+        clearTimeout(strokeTimeoutRef.current)
+      }
+    }
+  }, [])
 
   return (
     <div

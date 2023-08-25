@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { keyboardCodes, tabCaptureModes } from '~/constants'
+import { useCallback, useEffect, useState } from 'react'
+import { tabCaptureModes } from '~/constants'
 import { start, stop } from '~/lib/recording'
-import { isMac, isWindows } from '~/lib/utils'
 import { ChromeRuntimeMessage, RecordingOptions } from '~/types'
 import { setIsRecording, useStore } from '../../store'
 import Controlbar from './components/Controlbar'
@@ -10,9 +9,6 @@ import MouseClick from './components/MouseClick'
 import SelectingArea from './components/SelectingArea'
 import StrokeKeysDisplay from './components/StrokeKeysDisplay'
 import useScrollbar from './hooks/use-scrollbar'
-
-const clearRecordTimeout = 3000
-const metaKey = isMac() ? '⌘' : isWindows() ? '⊞' : 'Meta'
 
 interface AppProps {
   appRoot: ShadowRoot
@@ -41,41 +37,6 @@ function App({ appRoot }: AppProps) {
     showMouseClicks: state.showMouseClicks,
   }))
 
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (strokeTimeoutRef.current) {
-      clearTimeout(strokeTimeoutRef.current)
-    }
-
-    const keyboardModifiers = {
-      Shift: e.shiftKey,
-      Control: e.ctrlKey,
-      Alt: e.altKey,
-      Meta: e.metaKey,
-    }
-    const activeModifiers = Object.keys(keyboardModifiers).filter(
-      (modifier) =>
-        keyboardModifiers[modifier as keyof typeof keyboardModifiers],
-    )
-
-    const replaceMetaKey = () => {
-      if (activeModifiers.includes('Meta')) {
-        activeModifiers.splice(activeModifiers.indexOf('Meta'), 1, metaKey)
-      }
-    }
-
-    if (activeModifiers.includes(e.key)) {
-      replaceMetaKey()
-      setStrokeKeys(activeModifiers)
-    } else {
-      replaceMetaKey()
-      setStrokeKeys([...activeModifiers, keyboardCodes[e.code] ?? e.code])
-    }
-
-    strokeTimeoutRef.current = setTimeout(() => {
-      setStrokeKeys([])
-    }, clearRecordTimeout)
-  }, [])
-
   const [showControlbar, setShowControlbar] = useState(false)
   useEffect(() => {
     async function handleChromeMessage(
@@ -95,7 +56,6 @@ function App({ appRoot }: AppProps) {
           break
         case 'stop-recording':
           setIsRecording(false)
-          window.removeEventListener('keydown', handleKeyDown)
           !tabCaptureModes.includes(recordingMode) && stop()
           break
         default:
@@ -106,29 +66,9 @@ function App({ appRoot }: AppProps) {
     return () => {
       chrome.runtime.onMessage.removeListener(handleChromeMessage)
     }
-  }, [handleKeyDown, recordingMode])
-
-  const [strokeKeys, setStrokeKeys] = useState<string[]>([])
-  const strokeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  }, [recordingMode])
 
   useScrollbar({ isRecording, scrollbarHidden })
-
-  useEffect(() => {
-    if (showKeystrokes && isRecording) {
-      window.addEventListener('keydown', handleKeyDown)
-      return () => {
-        window.removeEventListener('keydown', handleKeyDown)
-      }
-    }
-  }, [handleKeyDown, isRecording, showKeystrokes])
-
-  useEffect(() => {
-    return () => {
-      if (strokeTimeoutRef.current) {
-        clearTimeout(strokeTimeoutRef.current)
-      }
-    }
-  }, [])
 
   const startRecording = useCallback(() => {
     useStore.setState({ showCountdown: false })
@@ -160,9 +100,7 @@ function App({ appRoot }: AppProps) {
       {showCountdown && (
         <Countdown count={countdown} onFinish={startRecording} />
       )}
-      {isRecording && showKeystrokes && (
-        <StrokeKeysDisplay strokeKeys={strokeKeys} />
-      )}
+      {isRecording && showKeystrokes && <StrokeKeysDisplay />}
       {showControlbar && (
         <Controlbar appRoot={appRoot} onClose={handleOnClose} />
       )}
