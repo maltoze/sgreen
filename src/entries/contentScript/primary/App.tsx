@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { keyboardCodes, tabCaptureModes } from '~/constants'
-import { start } from '~/lib/recording'
+import { start, stop } from '~/lib/recording'
 import { isMac, isWindows } from '~/lib/utils'
 import { ChromeRuntimeMessage, RecordingOptions } from '~/types'
 import { setIsRecording, useStore } from '../../store'
@@ -95,8 +95,8 @@ function App({ appRoot }: AppProps) {
           break
         case 'stop-recording':
           setIsRecording(false)
-          tabCaptureModes.includes(recordingMode) &&
-            window.removeEventListener('keydown', handleKeyDown)
+          window.removeEventListener('keydown', handleKeyDown)
+          !tabCaptureModes.includes(recordingMode) && stop()
           break
         default:
           break
@@ -114,17 +114,13 @@ function App({ appRoot }: AppProps) {
   useScrollbar({ isRecording, scrollbarHidden })
 
   useEffect(() => {
-    if (
-      showKeystrokes &&
-      isRecording &&
-      tabCaptureModes.includes(recordingMode)
-    ) {
+    if (showKeystrokes && isRecording) {
       window.addEventListener('keydown', handleKeyDown)
       return () => {
         window.removeEventListener('keydown', handleKeyDown)
       }
     }
-  }, [handleKeyDown, isRecording, recordingMode, showKeystrokes])
+  }, [handleKeyDown, isRecording, showKeystrokes])
 
   useEffect(() => {
     return () => {

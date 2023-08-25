@@ -19,7 +19,7 @@ export default function StrokeKeysDisplay({
       className={clsx(
         'fixed z-[2147483647] flex -translate-x-1/2 justify-center',
         {
-          'bottom-8 left-1/2': recordingMode === 'tab',
+          'bottom-8 left-1/2': ['desktop', 'tab'].includes(recordingMode),
         },
       )}
       style={{

@@ -1,4 +1,4 @@
-import { offscreenUrl, tabCaptureModes } from '~/constants'
+import { offscreenUrl } from '~/constants'
 import { getCurrentTab, getStreamId, hasOffscreenDocument } from '~/lib/utils'
 import { RecordingMode, RecordingOptions } from '~/types'
 
@@ -6,7 +6,7 @@ let isRecording = false
 let recordingMode: RecordingMode | undefined
 
 chrome.action.onClicked.addListener(async (tab) => {
-  if (isRecording && recordingMode && tabCaptureModes.includes(recordingMode)) {
+  if (isRecording) {
     chrome.runtime.sendMessage({
       type: 'stop-recording',
       target: 'offscreen',
@@ -43,9 +43,6 @@ async function startRecording(data: Partial<RecordingOptions>) {
       target: 'offscreen',
       data: { streamId, ...data },
     })
-    chrome.action.setBadgeText({ text: 'REC' })
-    chrome.action.setBadgeTextColor({ color: '#ffffff' })
-    chrome.action.setBadgeBackgroundColor({ color: '#dc2626' })
   } else {
     chrome.desktopCapture.chooseDesktopMedia(
       ['screen', 'window', 'audio', 'tab'],
@@ -63,6 +60,9 @@ async function startRecording(data: Partial<RecordingOptions>) {
       },
     )
   }
+  chrome.action.setBadgeText({ text: 'REC' })
+  chrome.action.setBadgeTextColor({ color: '#ffffff' })
+  chrome.action.setBadgeBackgroundColor({ color: '#dc2626' })
   isRecording = true
 }
 
