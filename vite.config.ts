@@ -13,6 +13,7 @@ export default defineConfig(() => {
         ? webExtension({
             manifest: getManifest(),
             additionalInputs: {
+              scripts: ['src/entries/contentScript/primary/main.tsx'],
               html: [
                 'src/entries/background/offscreen.html',
                 'src/entries/tabs/main.html',

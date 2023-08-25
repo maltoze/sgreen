@@ -37,7 +37,8 @@ function App({ appRoot }: AppProps) {
     showMouseClicks: state.showMouseClicks,
   }))
 
-  const [showControlbar, setShowControlbar] = useState(false)
+  const [showControlbar, setShowControlbar] = useState(true)
+
   useEffect(() => {
     async function handleChromeMessage(
       message: ChromeRuntimeMessage<RecordingOptions>,
@@ -56,6 +57,7 @@ function App({ appRoot }: AppProps) {
           break
         case 'stop-recording':
           setIsRecording(false)
+          setShowControlbar(true)
           !tabCaptureModes.includes(recordingMode) && stop()
           break
         default:

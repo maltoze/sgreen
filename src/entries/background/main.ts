@@ -4,21 +4,47 @@ import { RecordingMode, RecordingOptions } from '~/types'
 
 let isRecording = false
 let recordingMode: RecordingMode | undefined
+let recordingTabId: number | null = null
+const enabledTabs = new Set()
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, _tab) => {
+  if (changeInfo.status === 'loading' && enabledTabs.has(tabId)) {
+    chrome.scripting.executeScript({
+      target: { tabId },
+      files: ['/src/entries/contentScript/primary/main.js'],
+    })
+  }
+})
+
+chrome.tabs.onRemoved.addListener((tabId) => {
+  if (enabledTabs.has(tabId)) {
+    enabledTabs.delete(tabId)
+  }
+})
 
 chrome.action.onClicked.addListener(async (tab) => {
+  if (!tab.id) return
+
   if (isRecording) {
     chrome.runtime.sendMessage({
       type: 'stop-recording',
       target: 'offscreen',
     })
-    tab.id && chrome.tabs.sendMessage(tab.id, { type: 'stop-recording' })
+    recordingTabId &&
+      chrome.tabs.sendMessage(recordingTabId, { type: 'stop-recording' })
     isRecording = false
+    recordingTabId = null
     chrome.action.setBadgeText({ text: '' })
   } else {
-    tab.id &&
-      chrome.tabs.sendMessage(tab.id, {
-        type: 'show-controlbar',
+    if (enabledTabs.has(tab.id)) {
+      chrome.tabs.sendMessage(tab.id, { type: 'show-controlbar' })
+    } else {
+      chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ['/src/entries/contentScript/primary/main.js'],
       })
+      enabledTabs.add(tab.id)
+    }
   }
 })
 
@@ -57,13 +83,14 @@ async function startRecording(data: Partial<RecordingOptions>) {
               audio: canRequestAudioTrack,
             },
           })
-      },
+      }
     )
   }
   chrome.action.setBadgeText({ text: 'REC' })
   chrome.action.setBadgeTextColor({ color: '#ffffff' })
   chrome.action.setBadgeBackgroundColor({ color: '#dc2626' })
   isRecording = true
+  recordingTabId = tab.id
 }
 
 chrome.runtime.onMessage.addListener(
@@ -77,7 +104,7 @@ chrome.runtime.onMessage.addListener(
         chrome.action.setBadgeText({ text: '' })
         chrome.tabs.create({
           url: `/src/entries/tabs/main.html?videoUrl=${encodeURIComponent(
-            message.videoUrl,
+            message.videoUrl
           )}`,
         })
         break
@@ -87,5 +114,5 @@ chrome.runtime.onMessage.addListener(
       default:
         throw new Error('Unrecognized message:', message.type)
     }
-  },
+  }
 )

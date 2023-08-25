@@ -11,22 +11,12 @@ const manifest: Partial<chrome.runtime.ManifestV3> = {
   background: {
     service_worker: 'src/entries/background/main.ts',
   },
-  content_scripts: [
-    {
-      js: ['src/entries/contentScript/primary/main.tsx'],
-      matches: ['*://*/*'],
-    },
-  ],
   icons: {
     16: 'icon.png',
     32: 'icon.png',
     48: 'icon.png',
     128: 'icon.png',
   },
-  // options_ui: {
-  //   page: 'src/entries/options/index.html',
-  //   open_in_tab: true,
-  // },
   permissions: [
     'tabCapture',
     'activeTab',
@@ -35,6 +25,7 @@ const manifest: Partial<chrome.runtime.ManifestV3> = {
     'desktopCapture',
     // chrome.windows
     'tabs',
+    'scripting',
   ],
 }
 
