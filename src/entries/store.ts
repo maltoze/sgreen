@@ -19,7 +19,7 @@ export interface IState {
     y: number
     width: number
     height: number
-  }
+  },
 }
 
 const persistKeys = [
@@ -31,6 +31,7 @@ const persistKeys = [
   'showMouseClicks',
   'area',
   'recordingMode',
+  'showControlbar'
 ]
 
 export const useStore = create<IState>()(

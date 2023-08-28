@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 import { tabCaptureModes } from '~/constants'
 import { start, stop } from '~/lib/recording'
 import { ChromeRuntimeMessage, RecordingOptions } from '~/types'
@@ -25,6 +25,7 @@ function App({ appRoot }: AppProps) {
     countdown,
     area,
     showMouseClicks,
+    showControlbar,
   } = useStore((state) => ({
     scrollbarHidden: state.scrollbarHidden,
     audio: state.audio,
@@ -35,9 +36,8 @@ function App({ appRoot }: AppProps) {
     countdown: state.countdown,
     area: state.area,
     showMouseClicks: state.showMouseClicks,
+    showControlbar: state.showControlbar,
   }))
-
-  const [showControlbar, setShowControlbar] = useState(true)
 
   useEffect(() => {
     async function handleChromeMessage(
@@ -47,7 +47,7 @@ function App({ appRoot }: AppProps) {
     ) {
       switch (message.type) {
         case 'show-controlbar':
-          setShowControlbar(true)
+          useStore.setState({ showControlbar: true })
           break
         case 'start-recording':
           setIsRecording(true)
@@ -72,8 +72,7 @@ function App({ appRoot }: AppProps) {
   useScrollbar({ isRecording, scrollbarHidden })
 
   const startRecording = useCallback(() => {
-    useStore.setState({ showCountdown: false })
-    setShowControlbar(false)
+    useStore.setState({ showCountdown: false, showControlbar: false })
 
     const recordingDelay = 100
     setIsRecording(true)
@@ -93,7 +92,7 @@ function App({ appRoot }: AppProps) {
   }, [audio, recordingMode, area])
 
   function handleOnClose() {
-    setShowControlbar(false)
+    useStore.setState({ showControlbar: false })
   }
 
   return (
