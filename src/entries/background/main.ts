@@ -1,6 +1,7 @@
 import { offscreenUrl } from '~/constants'
 import { getCurrentTab, getStreamId, hasOffscreenDocument } from '~/lib/utils'
 import { RecordingMode, RecordingOptions } from '~/types'
+import { useStore } from '../store'
 
 let isRecording = false
 let recordingMode: RecordingMode | undefined
@@ -9,10 +10,11 @@ const enabledTabs = new Set()
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, _tab) => {
   if (changeInfo.status === 'loading' && enabledTabs.has(tabId)) {
-    chrome.scripting.executeScript({
-      target: { tabId },
-      files: ['/src/entries/contentScript/primary/main.js'],
-    })
+    enabledTabs.delete(tabId)
+    // chrome.scripting.executeScript({
+    //   target: { tabId },
+    //   files: ['/src/entries/contentScript/primary/main.js'],
+    // })
   }
 })
 
@@ -32,6 +34,7 @@ chrome.action.onClicked.addListener(async (tab) => {
     })
     recordingTabId &&
       chrome.tabs.sendMessage(recordingTabId, { type: 'stop-recording' })
+    useStore.setState({ isRecording: false })
     isRecording = false
     recordingTabId = null
     chrome.action.setBadgeText({ text: '' })

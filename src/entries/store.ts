@@ -19,7 +19,7 @@ export interface IState {
     y: number
     width: number
     height: number
-  },
+  }
 }
 
 const persistKeys = [
@@ -29,9 +29,8 @@ const persistKeys = [
   'isRecording',
   'countdown',
   'showMouseClicks',
-  'area',
   'recordingMode',
-  'showControlbar'
+  'area',
 ]
 
 export const useStore = create<IState>()(
@@ -41,7 +40,7 @@ export const useStore = create<IState>()(
       scrollbarHidden: false,
       showKeystrokes: false,
       audio: false,
-      showControlbar: false,
+      showControlbar: true,
       showCountdown: false,
       recordingMode: 'tab',
       countdown: 3,
@@ -58,10 +57,10 @@ export const useStore = create<IState>()(
       storage: createJSONStorage(() => chromeLocalStorage),
       partialize: (state) =>
         Object.fromEntries(
-          Object.entries(state).filter(([key]) => persistKeys.includes(key)),
+          Object.entries(state).filter(([key]) => persistKeys.includes(key))
         ),
-    },
-  ),
+    }
+  )
 )
 
 export const setIsRecording = (recording: boolean) =>
