@@ -1,8 +1,9 @@
 import browser from 'webextension-polyfill'
+import { useStore } from '../store'
 
 export default async function renderContent(
   cssPaths: string[],
-  render: (appRoot: ShadowRoot) => void,
+  render: (appRoot: ShadowRoot) => void
 ) {
   const appContainer = document.createElement('div')
   const shadowRoot = appContainer.attachShadow({
@@ -33,6 +34,9 @@ export default async function renderContent(
     const focusInEvent = new FocusEvent('focusin')
     document.dispatchEvent(focusInEvent)
   })
+
+  const isRecording = useStore.getState().isRecording
+  !isRecording && useStore.setState({ showControlbar: true })
 
   render(shadowRoot)
 }
