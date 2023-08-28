@@ -30,7 +30,7 @@ export default function StrokeKeysDisplay() {
     }
     const activeModifiers = Object.keys(keyboardModifiers).filter(
       (modifier) =>
-        keyboardModifiers[modifier as keyof typeof keyboardModifiers],
+        keyboardModifiers[modifier as keyof typeof keyboardModifiers]
     )
 
     const replaceMetaKey = () => {
@@ -73,7 +73,7 @@ export default function StrokeKeysDisplay() {
         'fixed z-[2147483647] flex -translate-x-1/2 justify-center',
         {
           'bottom-8 left-1/2': ['desktop', 'tab'].includes(recordingMode),
-        },
+        }
       )}
       style={{
         bottom:
@@ -89,7 +89,7 @@ export default function StrokeKeysDisplay() {
             key={`${strokeKey}-${idx}`}
             className={clsx(
               'select-none rounded-lg border bg-background/30 px-4 py-2 text-3xl font-semibold text-foreground shadow-[0_2px_0px_1px_hsl(214.3_31.8%_91.4%)] backdrop-blur',
-              { 'h-[54px] w-48': strokeKey === ' ' },
+              { 'h-[54px] w-48': strokeKey === ' ' }
             )}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

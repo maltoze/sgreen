@@ -24,7 +24,6 @@ const manifest: Partial<chrome.runtime.ManifestV3> = {
     'storage',
     'desktopCapture',
     // chrome.windows
-    'tabs',
     'scripting',
   ],
 }
