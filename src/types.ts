@@ -16,7 +16,9 @@ export interface RecordingOptions {
     y: number
     width: number
     height: number
-  }
+  },
+  enableBackground: boolean
+  selectedBackground: number
 }
 
 export interface ChromeRuntimeMessage<T> {

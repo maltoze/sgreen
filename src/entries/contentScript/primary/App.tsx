@@ -24,6 +24,8 @@ function App({ appRoot }: AppProps) {
     area,
     showMouseClicks,
     showControlbar,
+    enableBackground,
+    selectedBackground,
   } = useStore((state) => ({
     scrollbarHidden: state.scrollbarHidden,
     audio: state.audio,
@@ -35,6 +37,8 @@ function App({ appRoot }: AppProps) {
     area: state.area,
     showMouseClicks: state.showMouseClicks,
     showControlbar: state.showControlbar,
+    enableBackground: state.enableBackground,
+    selectedBackground: state.selectedBackground,
   }))
 
   useScrollbar({ isRecording, scrollbarHidden })
@@ -51,11 +55,13 @@ function App({ appRoot }: AppProps) {
         data: {
           audio,
           recordingMode,
+          enableBackground,
+          selectedBackground,
           ...(recordingMode === 'area' ? { area } : {}),
         },
       })
     }, recordingDelay)
-  }, [audio, recordingMode, area])
+  }, [audio, recordingMode, enableBackground, selectedBackground, area])
 
   function handleOnClose() {
     useStore.setState({ showControlbar: false })

@@ -4,7 +4,6 @@ import {
   DesktopIcon,
   MarginIcon,
   PaddingIcon,
-  VideoIcon,
 } from '@radix-ui/react-icons'
 import clsx from 'clsx'
 import { motion } from 'framer-motion'
@@ -23,15 +22,6 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
-import { Label } from '~/components/ui/label'
-import {
-  Popover,
-  PopoverContent,
-  PopoverPortal,
-  PopoverTrigger,
-} from '~/components/ui/popover'
-import { RadioGroup, RadioGroupItem } from '~/components/ui/radio-group'
-import { Switch } from '~/components/ui/switch'
 import {
   Tooltip,
   TooltipContent,
@@ -41,6 +31,7 @@ import {
 import { tabCaptureModes } from '~/constants'
 import { useStore } from '~/entries/store'
 import { RecordingMode } from '~/types'
+import BackgroundPopover from './BackgroundPopover'
 
 interface RecordingModeOption {
   name: RecordingMode
@@ -61,7 +52,6 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
     recordingMode,
     countdown,
     showMouseClicks,
-    enableBackground,
   } = useStore((state) => ({
     audio: state.audio,
     showKeystrokes: state.showKeystrokes,
@@ -69,7 +59,6 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
     recordingMode: state.recordingMode,
     countdown: state.countdown,
     showMouseClicks: state.showMouseClicks,
-    enableBackground: state.enableBackground,
   }))
 
   const recordingModes: RecordingModeOption[] = [
@@ -212,86 +201,7 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
           </div>
           <div className="flex items-center space-x-2">
             <Divider />
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  Style
-                </Button>
-              </PopoverTrigger>
-              <PopoverPortal
-                // @ts-ignore
-                container={appRoot}
-              >
-                <PopoverContent
-                  sideOffset={10}
-                  side="top"
-                  className="z-[2147483647] space-y-4 bg-background/50 backdrop-blur"
-                >
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Label htmlFor="enable-background">Background</Label>
-                      <Switch
-                        id="enable-background"
-                        checked={enableBackground}
-                        onCheckedChange={(value) => {
-                          useStore.setState({ enableBackground: value })
-                        }}
-                      />
-                    </div>
-                    {enableBackground && (
-                      <div className="flex space-x-4">
-                        <RadioGroup
-                          className="grid grid-cols-3 gap-2"
-                          defaultValue="tab"
-                        >
-                          <Label
-                            htmlFor="bg-0"
-                            className="border-2 border-muted bg-popover hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-primary"
-                          >
-                            <RadioGroupItem
-                              className="sr-only"
-                              id="bg-0"
-                              value="bg-0"
-                            />
-                            <div className="h-5 w-5 bg-gradient-to-br from-violet-700 to-purple-700 shadow"></div>
-                          </Label>
-                          <Label
-                            htmlFor="bg-1"
-                            className="border-2 border-muted bg-popover hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-primary"
-                          >
-                            <RadioGroupItem
-                              className="sr-only"
-                              id="bg-1"
-                              value="bg-1"
-                            />
-                            <div className="h-5 w-5 bg-gradient-to-br from-violet-700 to-fuchsia-700 shadow"></div>
-                          </Label>
-                        </RadioGroup>
-                      </div>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Preview</Label>
-                    <div className="flex justify-center">
-                      <div className="relative flex items-center justify-center rounded-md bg-gradient-to-br from-violet-700 to-purple-700 px-5 py-3 shadow">
-                        <VideoIcon className="absolute h-5 w-5" />
-                        <div className="flex flex-col space-y-0.5 rounded bg-blue-200 px-2 py-1.5 shadow">
-                          <div className="h-1 w-9 rounded bg-background/50"></div>
-                          <div className="h-1 w-5 rounded bg-background/50"></div>
-                          <div className="h-1 w-12 rounded bg-background/50"></div>
-                          <div className="h-1 w-8 rounded bg-background/50"></div>
-                          <div className="h-1 w-16 rounded bg-background/50"></div>
-                          <div className="h-1 w-10 rounded bg-background/50"></div>
-                          <div className="h-1 w-8 rounded bg-background/50"></div>
-                          <div className="h-1 w-14 rounded bg-background/50"></div>
-                          <div className="h-1 w-10 rounded bg-background/50"></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </PopoverPortal>
-            </Popover>
+            <BackgroundPopover container={appRoot} />
           </div>
           <div className="flex items-center space-x-2">
             <Divider />
