@@ -8,8 +8,22 @@ let recordingMode: RecordingMode | undefined
 let recordingTabId: number | null = null
 const enabledTabs = new Set()
 
+function stopRecording() {
+  chrome.runtime.sendMessage({
+    type: 'stop-recording',
+    target: 'offscreen',
+  })
+  recordingTabId &&
+    chrome.tabs.sendMessage(recordingTabId, { type: 'stop-recording' })
+  useStore.setState({ isRecording: false })
+  isRecording = false
+  recordingTabId = null
+  chrome.action.setBadgeText({ text: '' })
+}
+
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, _tab) => {
   if (changeInfo.status === 'loading' && enabledTabs.has(tabId)) {
+    isRecording && stopRecording()
     enabledTabs.delete(tabId)
     // chrome.scripting.executeScript({
     //   target: { tabId },
@@ -28,16 +42,7 @@ chrome.action.onClicked.addListener(async (tab) => {
   if (!tab.id) return
 
   if (isRecording) {
-    chrome.runtime.sendMessage({
-      type: 'stop-recording',
-      target: 'offscreen',
-    })
-    recordingTabId &&
-      chrome.tabs.sendMessage(recordingTabId, { type: 'stop-recording' })
-    useStore.setState({ isRecording: false })
-    isRecording = false
-    recordingTabId = null
-    chrome.action.setBadgeText({ text: '' })
+    stopRecording()
   } else {
     if (enabledTabs.has(tab.id)) {
       chrome.tabs.sendMessage(tab.id, { type: 'show-controlbar' })
