@@ -6,13 +6,14 @@ let recorder: MediaRecorder | undefined
 let data: Blob[] = []
 let startTime: number
 let media: MediaStream | undefined
+let drawIntervalId: ReturnType<typeof setInterval>
 
 const frameRate = 30
 const bitRate = 8 * 1024 * 1024
 const devicePixelRatio = window.devicePixelRatio || 1
 
 function getChromeMediaSource(
-  recordingMode: RecordingOptions['recordingMode'],
+  recordingMode: RecordingOptions['recordingMode']
 ) {
   return tabCaptureModes.includes(recordingMode) ? 'tab' : 'desktop'
 }
@@ -39,11 +40,11 @@ function createAreaRecorderMediaStream(area: RecordingOptions['area']) {
         0,
         0,
         area.width,
-        area.height,
+        area.height
       )
     }
     drawFrame()
-    setInterval(drawFrame, 1000 / frameRate)
+    drawIntervalId = setInterval(drawFrame, 1000 / frameRate)
   })
 
   video.play()
@@ -60,7 +61,7 @@ export async function start(
     recordingMode = defaultRecordingMode,
     area,
   }: RecordingOptions,
-  callback?: () => void,
+  callback?: () => void
 ) {
   if (recorder?.state === 'recording') {
     throw new Error('Called startRecording while recording is in progress.')
@@ -147,4 +148,5 @@ export async function stop() {
   recorder?.stop()
   recorder?.stream.getTracks().forEach((t) => t.stop())
   media?.getTracks().forEach((t) => t.stop())
+  clearInterval(drawIntervalId)
 }
