@@ -8,6 +8,7 @@ let startTime: number
 let media: MediaStream | undefined
 let drawIntervalId: ReturnType<typeof setInterval>
 
+const recorderMimeType = 'video/webm;codecs=h264'
 const frameRate = 30
 const bitRate = 8 * 1024 * 1024
 const devicePixelRatio = window.devicePixelRatio || 1
@@ -116,14 +117,14 @@ export async function start(
   }
 
   recorder = new MediaRecorder(recorderMedia, {
-    mimeType: 'video/webm',
+    mimeType: recorderMimeType,
     videoBitsPerSecond: bitRate,
   })
 
   recorder.ondataavailable = (event) => data.push(event.data)
   recorder.onstop = async () => {
     const duration = Date.now() - startTime
-    const blob = new Blob(data, { type: 'video/webm' })
+    const blob = new Blob(data, { type: recorderMimeType })
     const fixedBlob = await fixWebmDuration(blob, duration, { logger: false })
 
     callback?.()
