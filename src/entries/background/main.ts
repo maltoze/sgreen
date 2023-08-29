@@ -4,7 +4,7 @@ import { RecordingMode, RecordingOptions } from '~/types'
 import { useStore } from '../store'
 
 let isRecording = false
-let recordingMode: RecordingMode | null = null
+let recordingMode: RecordingMode | null
 let recordingTabId: number | null = null
 const enabledTabs = new Set()
 
@@ -72,7 +72,7 @@ async function startRecording(data: Partial<RecordingOptions>) {
     })
   }
 
-  recordingMode = data.recordingMode
+  recordingMode = data.recordingMode ?? null
   const tab = await getCurrentTab()
   if (!tab.id) return
 
