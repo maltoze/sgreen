@@ -8,7 +8,7 @@ let startTime: number
 let media: MediaStream | undefined
 let drawIntervalId: ReturnType<typeof setInterval>
 
-const recorderMimeType = 'video/webm;codecs=h264'
+const recorderMimeType = 'video/webm'
 const frameRate = 30
 const bitRate = 8 * 1024 * 1024
 const devicePixelRatio = window.devicePixelRatio || 1
