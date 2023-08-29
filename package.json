@@ -10,7 +10,7 @@
     "dev": "vite",
     "serve:firefox": "web-ext run --start-url \"about:debugging#/runtime/this-firefox\"  --source-dir ./dist/",
     "serve:chrome": "web-ext run -t chromium --start-url \"https://example.com\" --source-dir ./dist/",
-    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0 --cache",
     "storybook": "DISABLE_WEBEXTENSION=1 storybook dev -p 6006",
     "build-storybook": "DISABLE_WEBEXTENSION=1 storybook build",
     "prepare": "husky install"
