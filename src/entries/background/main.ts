@@ -1,7 +1,14 @@
+import * as Sentry from '@sentry/browser'
 import { offscreenUrl, tabCaptureModes } from '~/constants'
 import { getCurrentTab, getStreamId, hasOffscreenDocument } from '~/lib/utils'
 import { RecordingMode, RecordingOptions } from '~/types'
 import { useStore } from '../store'
+
+if (process.env.NODE_ENV === 'production') {
+  Sentry.init({
+    dsn: 'https://d12dd277a192c6ca69ba59ebb958e6e2@o82598.ingest.sentry.io/4505787043479552',
+  })
+}
 
 let isRecording = false
 let recordingMode: RecordingMode | null
@@ -24,11 +31,14 @@ function stopRecording() {
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, _tab) => {
   if (
+    isRecording &&
     recordingMode &&
-    tabCaptureModes.includes(recordingMode) &&
-    changeInfo.status === 'loading' &&
-    enabledTabs.has(tabId)
+    !tabCaptureModes.includes(recordingMode)
   ) {
+    return
+  }
+
+  if (changeInfo.status === 'loading' && enabledTabs.has(tabId)) {
     isRecording && stopRecording()
     enabledTabs.delete(tabId)
     // chrome.scripting.executeScript({

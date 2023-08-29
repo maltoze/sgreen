@@ -1,10 +1,10 @@
 import path from 'path'
 import webExtension from '@samrum/vite-plugin-web-extension'
+import { sentryVitePlugin } from '@sentry/vite-plugin'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { getManifest } from './src/manifest'
 
-// https://vitejs.dev/config/
 export default defineConfig(() => {
   return {
     plugins: [
@@ -21,6 +21,11 @@ export default defineConfig(() => {
             },
           })
         : undefined,
+      sentryVitePlugin({
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+        org: 'maltoze',
+        project: 'sgreen',
+      }),
     ],
     resolve: {
       alias: {
@@ -29,6 +34,9 @@ export default defineConfig(() => {
     },
     server: {
       port: 4173,
+    },
+    build: {
+      sourcemap: true,
     },
   }
 })
