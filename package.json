@@ -12,7 +12,8 @@
     "serve:chrome": "web-ext run -t chromium --start-url \"https://example.com\" --source-dir ./dist/",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "storybook": "DISABLE_WEBEXTENSION=1 storybook dev -p 6006",
-    "build-storybook": "DISABLE_WEBEXTENSION=1 storybook build"
+    "build-storybook": "DISABLE_WEBEXTENSION=1 storybook build",
+    "prepare": "husky install"
   },
   "license": "AGPL-3.0",
   "devDependencies": {
@@ -46,6 +47,7 @@
     "eslint-plugin-react": "^7.33.1",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-storybook": "^0.6.13",
+    "husky": "^8.0.3",
     "postcss": "^8.4.27",
     "prettier": "^2.8.8",
     "prettier-plugin-tailwindcss": "^0.4.1",
