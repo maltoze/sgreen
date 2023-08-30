@@ -16,10 +16,10 @@ export default function MouseClick() {
         setPosition({ x: e.clientX, y: e.clientY })
       }
     },
-    [isPointerDown],
+    [isPointerDown]
   )
 
-  function handlePointerUp(_e: PointerEvent) {
+  function handlePointerUp(_e: PointerEvent | DragEvent) {
     setIsPointerDown(false)
   }
 
@@ -27,10 +27,12 @@ export default function MouseClick() {
     document.addEventListener('pointerdown', handlePointerDown)
     document.addEventListener('pointerup', handlePointerUp)
     document.addEventListener('pointermove', handlePointerMove)
+    document.addEventListener('dragstart', handlePointerUp)
     return () => {
       document.removeEventListener('pointerdown', handlePointerDown)
       document.removeEventListener('pointerup', handlePointerUp)
       document.removeEventListener('pointermove', handlePointerMove)
+      document.removeEventListener('dragstart', handlePointerUp)
     }
   }, [handlePointerMove])
 
