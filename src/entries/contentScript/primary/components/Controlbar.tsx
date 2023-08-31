@@ -52,6 +52,8 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
     recordingMode,
     countdown,
     showMouseClicks,
+    enableBackground,
+    selectedBackground,
   } = useStore((state) => ({
     audio: state.audio,
     showKeystrokes: state.showKeystrokes,
@@ -59,6 +61,8 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
     recordingMode: state.recordingMode,
     countdown: state.countdown,
     showMouseClicks: state.showMouseClicks,
+    enableBackground: state.enableBackground,
+    selectedBackground: state.selectedBackground,
   }))
 
   const recordingModes: RecordingModeOption[] = [
@@ -116,15 +120,19 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
       case 'tab':
         useStore.setState({ showCountdown: true })
         break
-      default:
+      case 'desktop':
         chrome.runtime.sendMessage({
           type: 'start-recording',
           target: 'background',
           data: {
             recordingMode,
+            enableBackground,
+            selectedBackground,
           },
         })
         onClose()
+        break
+      default:
         break
     }
   }
