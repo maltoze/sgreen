@@ -13,6 +13,7 @@ export interface IState {
   recordingMode: RecordingMode
   countdown: number
   showMouseClicks: boolean
+  showControlbar: boolean
   area: {
     x: number
     y: number
@@ -49,6 +50,7 @@ export const useStore = create<IState>()(
         height: 0,
       },
       showMouseClicks: false,
+      showControlbar: false,
     }),
     {
       name: localStorageName,

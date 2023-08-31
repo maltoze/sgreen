@@ -53,10 +53,11 @@ chrome.action.onClicked.addListener(async (tab) => {
     if (enabledTabs.has(tab.id)) {
       chrome.tabs.sendMessage(tab.id, { type: 'show-controlbar' })
     } else {
-      chrome.scripting.executeScript({
+      await chrome.scripting.executeScript({
         target: { tabId: tab.id },
         files: ['/src/entries/contentScript/primary/main.js'],
       })
+      chrome.tabs.sendMessage(tab.id, { type: 'show-controlbar' })
       enabledTabs.add(tab.id)
     }
   }
