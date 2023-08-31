@@ -82,7 +82,7 @@ async function startRecording(data: Partial<RecordingOptions>) {
     chrome.runtime.sendMessage({
       type: 'start-recording',
       target: 'offscreen',
-      data: { streamId, ...data },
+      data: { streamId, width: tab.width, height: tab.height, ...data },
     })
     recordingTabId = tab.id
   } else {

@@ -50,8 +50,6 @@ function App({ appRoot }: AppProps) {
         target: 'background',
         data: {
           audio,
-          width: window.innerWidth,
-          height: window.innerHeight,
           recordingMode,
           ...(recordingMode === 'area' ? { area } : {}),
         },
