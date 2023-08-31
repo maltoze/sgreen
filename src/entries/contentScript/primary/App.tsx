@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useState } from 'react'
-import { tabCaptureModes } from '~/constants'
-import { start, stop } from '~/lib/recording'
 import { ChromeRuntimeMessage, RecordingOptions } from '~/types'
 import { setIsRecording, useStore } from '../../store'
 import Controlbar from './components/Controlbar'
@@ -49,15 +47,8 @@ function App({ appRoot }: AppProps) {
         case 'show-controlbar':
           setShowControlbar(true)
           break
-        case 'start-recording':
-          setIsRecording(true)
-          !tabCaptureModes.includes(recordingMode) &&
-            message.data &&
-            start(message.data, () => setIsRecording(false))
-          break
         case 'stop-recording':
           setIsRecording(false)
-          !tabCaptureModes.includes(recordingMode) && stop()
           break
         default:
           break

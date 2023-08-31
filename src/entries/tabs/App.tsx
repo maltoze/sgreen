@@ -1,15 +1,45 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Confetti from 'react-confetti'
+import Recorder from '~/lib/recording'
+import { RecordingOptions } from '~/types'
 
 const params = new URLSearchParams(location.search)
-const videoUrl = params.get('videoUrl')
+const tabId = params.get('tabId')
+
+const recorder = new Recorder()
+
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.type === 'stop-recording') {
+    recorder.stop()
+  }
+})
 
 export default function App() {
   const videoRef = useRef<HTMLVideoElement>(null)
+  const [videoUrl, setVideoUrl] = useState<string>(params.get('videoUrl') || '')
 
-  if (!videoUrl) {
-    return null
-  }
+  useEffect(() => {
+    if (!tabId) return
+    const desktopMediaRequestId = chrome.desktopCapture.chooseDesktopMedia(
+      ['screen', 'window', 'audio'],
+      (streamId, { canRequestAudioTrack }) => {
+        recorder.start(
+          {
+            streamId,
+            audio: canRequestAudioTrack,
+            recordingMode: 'desktop',
+          } as RecordingOptions,
+          (url) => setVideoUrl(url)
+        )
+        tabId && chrome.tabs.update(parseInt(tabId), { active: true })
+      }
+    )
+    return () => {
+      chrome.desktopCapture.cancelChooseDesktopMedia(desktopMediaRequestId)
+    }
+  }, [])
+
+  if (!videoUrl) return null
 
   return (
     <>

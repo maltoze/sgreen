@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/browser'
-import { offscreenUrl, tabCaptureModes } from '~/constants'
+import { offscreenUrl } from '~/constants'
 import { getCurrentTab, getStreamId, hasOffscreenDocument } from '~/lib/utils'
 import { RecordingMode, RecordingOptions } from '~/types'
 import { useStore } from '../store'
@@ -13,6 +13,7 @@ if (process.env.NODE_ENV === 'production') {
 let isRecording = false
 let recordingMode: RecordingMode | null
 let recordingTabId: number | null = null
+let resultTabId: number | null = null
 const enabledTabs = new Set()
 
 function stopRecording() {
@@ -22,11 +23,10 @@ function stopRecording() {
   })
   recordingTabId &&
     chrome.tabs.sendMessage(recordingTabId, { type: 'stop-recording' })
-  useStore.setState({ isRecording: false })
-  isRecording = false
-  recordingTabId = null
-  recordingMode = null
-  chrome.action.setBadgeText({ text: '' })
+  if (recordingMode === 'desktop') {
+    resultTabId &&
+      chrome.tabs.sendMessage(resultTabId, { type: 'stop-recording' })
+  }
 }
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, _tab) => {
@@ -83,28 +83,17 @@ async function startRecording(data: Partial<RecordingOptions>) {
       target: 'offscreen',
       data: { streamId, ...data },
     })
+    recordingTabId = tab.id
   } else {
-    chrome.desktopCapture.chooseDesktopMedia(
-      ['screen', 'window', 'audio', 'tab'],
-      tab,
-      (streamId, { canRequestAudioTrack }) => {
-        tab.id &&
-          chrome.tabs.sendMessage(tab.id, {
-            type: 'start-recording',
-            data: {
-              streamId,
-              recordingMode: 'desktop',
-              audio: canRequestAudioTrack,
-            },
-          })
-      }
-    )
+    const recordingTab = await chrome.tabs.create({
+      url: `/src/entries/tabs/main.html?tabId=${tab.id}`,
+    })
+    resultTabId = recordingTab.id ?? null
   }
   chrome.action.setBadgeText({ text: 'REC' })
   chrome.action.setBadgeTextColor({ color: '#ffffff' })
   chrome.action.setBadgeBackgroundColor({ color: '#dc2626' })
   isRecording = true
-  recordingTabId = tab.id
 }
 
 chrome.runtime.onMessage.addListener(
@@ -114,13 +103,20 @@ chrome.runtime.onMessage.addListener(
     }
     switch (message.type) {
       case 'recording-complete':
-        isRecording = false
+        if (recordingMode === 'desktop') {
+          resultTabId && chrome.tabs.update(resultTabId, { active: true })
+        } else {
+          chrome.tabs.create({
+            url: `/src/entries/tabs/main.html?videoUrl=${encodeURIComponent(
+              message.videoUrl
+            )}`,
+          })
+        }
         chrome.action.setBadgeText({ text: '' })
-        chrome.tabs.create({
-          url: `/src/entries/tabs/main.html?videoUrl=${encodeURIComponent(
-            message.videoUrl
-          )}`,
-        })
+        useStore.setState({ isRecording: false })
+        isRecording = false
+        recordingTabId = null
+        recordingMode = null
         break
       case 'start-recording':
         startRecording(message.data)
