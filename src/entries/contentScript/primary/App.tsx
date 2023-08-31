@@ -1,3 +1,4 @@
+import { AnimatePresence } from 'framer-motion'
 import { useCallback } from 'react'
 import { setIsRecording, useStore } from '../../store'
 import Controlbar from './components/Controlbar'
@@ -72,9 +73,11 @@ function App({ appRoot }: AppProps) {
         />
       )}
       {isRecording && showKeystrokes && <StrokeKeysDisplay />}
-      {showControlbar && !isRecording && (
-        <Controlbar appRoot={appRoot} onClose={handleOnClose} />
-      )}
+      <AnimatePresence>
+        {showControlbar && !isRecording && (
+          <Controlbar appRoot={appRoot} onClose={handleOnClose} />
+        )}
+      </AnimatePresence>
       {recordingMode === 'area' && (isRecording || showControlbar) && (
         <SelectingArea />
       )}
