@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { tabCaptureModes } from '~/constants'
 import { start, stop } from '~/lib/recording'
 import { ChromeRuntimeMessage, RecordingOptions } from '~/types'
@@ -25,7 +25,6 @@ function App({ appRoot }: AppProps) {
     countdown,
     area,
     showMouseClicks,
-    showControlbar,
   } = useStore((state) => ({
     scrollbarHidden: state.scrollbarHidden,
     audio: state.audio,
@@ -36,8 +35,9 @@ function App({ appRoot }: AppProps) {
     countdown: state.countdown,
     area: state.area,
     showMouseClicks: state.showMouseClicks,
-    showControlbar: state.showControlbar,
   }))
+
+  const [showControlbar, setShowControlbar] = useState(true)
 
   useEffect(() => {
     async function handleChromeMessage(
@@ -47,7 +47,7 @@ function App({ appRoot }: AppProps) {
     ) {
       switch (message.type) {
         case 'show-controlbar':
-          useStore.setState({ showControlbar: true })
+          setShowControlbar(true)
           break
         case 'start-recording':
           setIsRecording(true)
@@ -72,7 +72,8 @@ function App({ appRoot }: AppProps) {
   useScrollbar({ isRecording, scrollbarHidden })
 
   const startRecording = useCallback(() => {
-    useStore.setState({ showCountdown: false, showControlbar: false })
+    useStore.setState({ showCountdown: false })
+    setShowControlbar(false)
 
     const recordingDelay = 100
     setIsRecording(true)
@@ -92,7 +93,7 @@ function App({ appRoot }: AppProps) {
   }, [audio, recordingMode, area])
 
   function handleOnClose() {
-    useStore.setState({ showControlbar: false })
+    setShowControlbar(false)
   }
 
   return (
@@ -105,7 +106,7 @@ function App({ appRoot }: AppProps) {
         />
       )}
       {isRecording && showKeystrokes && <StrokeKeysDisplay />}
-      {showControlbar && (
+      {showControlbar && !isRecording && (
         <Controlbar appRoot={appRoot} onClose={handleOnClose} />
       )}
       {recordingMode === 'area' && (isRecording || showControlbar) && (

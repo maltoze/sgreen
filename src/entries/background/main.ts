@@ -30,21 +30,11 @@ function stopRecording() {
 }
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, _tab) => {
-  if (
-    isRecording &&
-    recordingMode &&
-    !tabCaptureModes.includes(recordingMode)
-  ) {
-    return
-  }
-
   if (changeInfo.status === 'loading' && enabledTabs.has(tabId)) {
-    isRecording && stopRecording()
-    enabledTabs.delete(tabId)
-    // chrome.scripting.executeScript({
-    //   target: { tabId },
-    //   files: ['/src/entries/contentScript/primary/main.js'],
-    // })
+    chrome.scripting.executeScript({
+      target: { tabId },
+      files: ['/src/entries/contentScript/primary/main.js'],
+    })
   }
 })
 

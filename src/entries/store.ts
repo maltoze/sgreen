@@ -9,7 +9,6 @@ export interface IState {
   scrollbarHidden: boolean
   audio: boolean
   showKeystrokes: boolean
-  showControlbar: boolean
   showCountdown: boolean
   recordingMode: RecordingMode
   countdown: number
@@ -40,7 +39,6 @@ export const useStore = create<IState>()(
       scrollbarHidden: false,
       showKeystrokes: false,
       audio: false,
-      showControlbar: true,
       showCountdown: false,
       recordingMode: 'tab',
       countdown: 3,
