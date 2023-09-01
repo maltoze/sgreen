@@ -12,14 +12,14 @@ class Recorder {
   private data: Blob[] = []
   private startTime: number
   private media: MediaStream | undefined
-  private drawIntervalId: ReturnType<typeof setInterval>
+  private drawTimerId: ReturnType<typeof setTimeout> | null
 
   constructor() {
     this.recorder = undefined
     this.data = []
     this.startTime = 0
     this.media = undefined
-    this.drawIntervalId = setInterval(() => {}, 0)
+    this.drawTimerId = null
   }
 
   private getChromeMediaSource(
@@ -33,31 +33,34 @@ class Recorder {
     canvas.width = area.width
     canvas.height = area.height
 
-    const context = canvas.getContext('2d')
-    if (!context) throw new Error('Could not get canvas context.')
+    const ctx = canvas.getContext('2d')
+    if (!ctx) throw new Error('Could not get canvas context.')
+
+    ctx.imageSmoothingEnabled = true
+    ctx.imageSmoothingQuality = 'high'
 
     const video = document.createElement('video')
     video.srcObject = this.media as MediaStream
+    video.autoplay = true
+
+    const drawFrame = () => {
+      ctx.drawImage(
+        video,
+        area.x * devicePixelRatio,
+        area.y * devicePixelRatio,
+        area.width * devicePixelRatio - 2, // workaround for black line on the right side
+        area.height * devicePixelRatio - 1,
+        0,
+        0,
+        area.width,
+        area.height
+      )
+      this.drawTimerId = setTimeout(drawFrame, 1000 / frameRate)
+    }
 
     video.addEventListener('play', () => {
-      const drawFrame = () => {
-        context.drawImage(
-          video,
-          area.x * devicePixelRatio,
-          area.y * devicePixelRatio,
-          area.width * devicePixelRatio - 2, // workaround for black line on the right side
-          area.height * devicePixelRatio - 1,
-          0,
-          0,
-          area.width,
-          area.height
-        )
-      }
       drawFrame()
-      this.drawIntervalId = setInterval(drawFrame, 1000 / frameRate)
     })
-
-    video.play()
 
     return canvas.captureStream(frameRate)
   }
@@ -162,7 +165,7 @@ class Recorder {
     this.recorder?.stop()
     this.recorder?.stream.getTracks().forEach((t) => t.stop())
     this.media?.getTracks().forEach((t) => t.stop())
-    clearInterval(this.drawIntervalId)
+    this.drawTimerId && clearTimeout(this.drawTimerId)
   }
 }
 
