@@ -1,11 +1,14 @@
 import fixWebmDuration from 'fix-webm-duration'
 import { defaultRecordingMode, tabCaptureModes } from '~/constants'
 import { RecordingOptions } from '~/types'
+import backgrounds from './backgrounds'
 
 const recorderMimeType = 'video/webm'
 const frameRate = 30
 const bitRate = 8 * 1024 * 1024
 const devicePixelRatio = window.devicePixelRatio || 1
+const px = 150
+const py = 100
 
 class Recorder {
   private recorder: MediaRecorder | undefined
@@ -28,44 +31,68 @@ class Recorder {
     return tabCaptureModes.includes(recordingMode) ? 'tab' : 'desktop'
   }
 
-  private createAreaRecorderMediaStream(area: RecordingOptions['area']) {
-    const canvas = document.createElement('canvas')
-    canvas.width = area.width
-    canvas.height = area.height
+  private createAreaRecorderMediaStream({
+    area,
+    enableBackground = false,
+    selectedBackground,
+  }: {
+    area?: RecordingOptions['area']
+    enableBackground?: boolean
+    selectedBackground: number
+  }) {
+    if (!this.media) return
 
+    const video = document.createElement('video')
+    video.srcObject = this.media as MediaStream
+    video.autoplay = true
+
+    const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
     if (!ctx) throw new Error('Could not get canvas context.')
 
     ctx.imageSmoothingEnabled = true
     ctx.imageSmoothingQuality = 'high'
 
-    const video = document.createElement('video')
-    video.srcObject = this.media as MediaStream
-    video.autoplay = true
-
-    // Draw a gradient background
-    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
-    gradient.addColorStop(0, '#6d28d9')
-    gradient.addColorStop(1, '#a21caf')
-    ctx.fillStyle = gradient
-
-    const drawFrame = () => {
-      ctx.drawImage(
-        video,
-        area.x * devicePixelRatio,
-        area.y * devicePixelRatio,
-        area.width * devicePixelRatio - 2, // workaround for black line on the right side
-        area.height * devicePixelRatio - 1,
-        0,
-        0,
-        area.width,
-        area.height
-      )
-      this.drawTimerId = setTimeout(drawFrame, 1000 / frameRate)
-    }
+    const dx = enableBackground ? px : 0
+    const dy = enableBackground ? py : 0
 
     video.addEventListener('play', () => {
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      const areaWidth = area?.width ?? video.videoWidth
+      const areaHeight = area?.height ?? video.videoHeight
+
+      canvas.width = areaWidth + (enableBackground ? 2 * px : 0)
+      canvas.height = areaHeight + (enableBackground ? 2 * py : 0)
+
+      if (enableBackground) {
+        // Draw a gradient background
+        const gradient = ctx.createLinearGradient(
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        )
+        const background = backgrounds[selectedBackground]
+        gradient.addColorStop(0, background.from)
+        gradient.addColorStop(1, background.to)
+        ctx.fillStyle = gradient
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+      }
+
+      const drawFrame = () => {
+        ctx.drawImage(
+          video,
+          (area?.x ?? 0) * devicePixelRatio,
+          (area?.y ?? 0) * devicePixelRatio,
+          areaWidth * devicePixelRatio - 2, // workaround for black line on the right side
+          areaHeight * devicePixelRatio - 1,
+          dx,
+          dy,
+          areaWidth,
+          areaHeight
+        )
+        this.drawTimerId = setTimeout(drawFrame, 1000 / frameRate)
+      }
+
       drawFrame()
     })
 
@@ -80,6 +107,8 @@ class Recorder {
       audio,
       recordingMode = defaultRecordingMode,
       area,
+      enableBackground,
+      selectedBackground,
     }: RecordingOptions,
     callback?: (url: string) => void
   ) {
@@ -128,13 +157,18 @@ class Recorder {
       audioSource.connect(audioContext.destination)
     }
 
-    let recorderMedia = this.media
-    if (recordingMode === 'area') {
-      recorderMedia = this.createAreaRecorderMediaStream(area)
-      const audioTracks = this.media.getAudioTracks()
-      if (audioTracks.length > 0) {
-        recorderMedia.addTrack(audioTracks[0])
-      }
+    const recorderMedia = this.createAreaRecorderMediaStream({
+      area,
+      enableBackground,
+      selectedBackground,
+    })
+    if (!recorderMedia) {
+      throw new Error('Could not create recorder media stream.')
+    }
+
+    const audioTracks = this.media.getAudioTracks()
+    if (audioTracks.length > 0) {
+      recorderMedia.addTrack(audioTracks[0])
     }
 
     this.recorder = new MediaRecorder(recorderMedia, {
@@ -145,9 +179,14 @@ class Recorder {
     this.recorder.ondataavailable = (event) => {
       this.data.push(event.data)
     }
+
+    this.media.addEventListener('inactive', () => {
+      this.recorder?.stop()
+    })
+
     this.recorder.onstop = async () => {
       const duration = Date.now() - this.startTime
-      const blob = new Blob(this.data, { type: this.data[0].type })
+      const blob = new Blob(this.data, { type: recorderMimeType })
       const fixedBlob = await fixWebmDuration(blob, duration, { logger: false })
 
       const url = URL.createObjectURL(fixedBlob)

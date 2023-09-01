@@ -34,6 +34,7 @@ const persistKeys = [
   'recordingMode',
   'area',
   'enableBackground',
+  'selectedBackground',
 ]
 
 export const useStore = create<IState>()(

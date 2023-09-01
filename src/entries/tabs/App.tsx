@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import Confetti from 'react-confetti'
 import Recorder from '~/lib/recording'
 import { RecordingOptions } from '~/types'
+import { useStore } from '../store'
 
 const params = new URLSearchParams(location.search)
 const tabId = params.get('tabId')
@@ -20,6 +21,7 @@ export default function App() {
 
   useEffect(() => {
     if (!tabId) return
+
     const desktopMediaRequestId = chrome.desktopCapture.chooseDesktopMedia(
       ['screen', 'window', 'audio'],
       (streamId, { canRequestAudioTrack }) => {
@@ -28,6 +30,8 @@ export default function App() {
             streamId,
             audio: canRequestAudioTrack,
             recordingMode: 'desktop',
+            enableBackground: useStore.getState().enableBackground,
+            selectedBackground: useStore.getState().selectedBackground,
           } as RecordingOptions,
           (url) => setVideoUrl(url)
         )
