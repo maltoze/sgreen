@@ -140,7 +140,7 @@ class Recorder {
     }
     this.recorder.onstop = async () => {
       const duration = Date.now() - this.startTime
-      const blob = new Blob(this.data, { type: this.data[0].type })
+      const blob = new Blob(this.data, { type: recorderMimeType })
       const fixedBlob = await fixWebmDuration(blob, duration, { logger: false })
 
       const url = URL.createObjectURL(fixedBlob)
