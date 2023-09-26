@@ -137,14 +137,12 @@ const SelectingArea = () => {
         ></div>
       </div>
       <div
-        className={clsx(
-          'fixed left-0 top-0 z-[2147483645] outline-dashed outline-2 outline-background',
-          {
-            'pointer-events-none': isSelecting || isRecording,
-            'cursor-grab': !isGrabbing,
-            'pointer-events-auto cursor-grabbing': isGrabbing,
-          }
-        )}
+        className={clsx('fixed left-0 top-0 z-[2147483645] ', {
+          'pointer-events-none': isSelecting || isRecording,
+          'cursor-grab': !isGrabbing,
+          'pointer-events-auto cursor-grabbing': isGrabbing,
+          'outline-dashed outline-2 outline-background': !isRecording,
+        })}
         onPointerDown={handleAreaPointerDown}
         onPointerMove={handleAreaPointerMove}
         onPointerUp={handleAreaPointerUp}

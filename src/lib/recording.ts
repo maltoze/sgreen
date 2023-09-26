@@ -48,8 +48,8 @@ class Recorder {
         video,
         area.x * devicePixelRatio,
         area.y * devicePixelRatio,
-        area.width * devicePixelRatio - 2, // workaround for black line on the right side
-        area.height * devicePixelRatio - 1,
+        area.width * devicePixelRatio,
+        area.height * devicePixelRatio,
         0,
         0,
         area.width,
