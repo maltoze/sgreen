@@ -131,10 +131,21 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
   const draggableNodeRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerBoundingRect, setContainerBoundingRect] = useState<DOMRect>()
+
   useEffect(() => {
+    const resizeObserver = new ResizeObserver(() => {
+      const container = containerRef.current
+      if (container) {
+        setContainerBoundingRect(container.getBoundingClientRect())
+      }
+    })
+
     const container = containerRef.current
-    if (container) {
-      setContainerBoundingRect(container.getBoundingClientRect())
+    if (!container) return
+    resizeObserver.observe(container)
+
+    return () => {
+      resizeObserver.disconnect()
     }
   }, [])
 
