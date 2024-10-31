@@ -12,6 +12,7 @@ export default defineConfig(() => {
       !process.env.DISABLE_WEBEXTENSION
         ? webExtension({
             manifest: getManifest(),
+            useDynamicUrlWebAccessibleResources: false,
             additionalInputs: {
               scripts: ['src/entries/contentScript/primary/main.tsx'],
               html: [
