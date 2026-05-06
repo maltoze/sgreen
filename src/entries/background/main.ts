@@ -57,8 +57,10 @@ chrome.action.onClicked.addListener(async (tab) => {
         target: { tabId: tab.id },
         files: ['/src/entries/contentScript/primary/main.js'],
       })
-      sendTabMessage(tab.id, { type: 'show-controlbar' })
-      enabledTabs.add(tab.id)
+      const delivered = await sendTabMessage(tab.id, { type: 'show-controlbar' })
+      if (delivered) {
+        enabledTabs.add(tab.id)
+      }
     }
   }
 })
