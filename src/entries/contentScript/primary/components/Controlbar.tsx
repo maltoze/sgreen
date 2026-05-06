@@ -171,7 +171,7 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
         className="fixed bottom-4 left-1/2 z-[2147483646]"
       >
         <motion.div
-          className="flex items-center gap-1 rounded-full bg-neutral-900/70 px-2 py-1.5 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.25)]"
+          className="flex items-center gap-1 rounded-full bg-neutral-900/80 px-2 py-1.5 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.25)]"
           ref={containerRef}
           initial={{ opacity: 0, y: 20, x: '-50%' }}
           animate={{ opacity: 1, y: 0, x: '-50%' }}
@@ -233,7 +233,7 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
               container={appRoot}
             >
               <DropdownMenuContent
-                className="z-[2147483647] w-52 rounded-xl border border-white/10 bg-neutral-900/90 backdrop-blur-md"
+                className="z-[2147483647] w-52 rounded-xl border border-white/10 bg-neutral-900/80 backdrop-blur-md"
                 sideOffset={10}
                 side="top"
                 onCloseAutoFocus={(e) => e.preventDefault()}
@@ -257,7 +257,7 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
                     container={appRoot}
                   >
                     <DropdownMenuSubContent
-                      className="z-[2147483647] min-w-[5rem] rounded-xl border border-white/10 bg-neutral-900/90 tabular-nums backdrop-blur-md"
+                      className="z-[2147483647] min-w-[5rem] rounded-xl border border-white/10 bg-neutral-900/80 tabular-nums backdrop-blur-md"
                       sideOffset={4}
                     >
                       <DropdownMenuRadioGroup
