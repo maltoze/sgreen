@@ -16,6 +16,19 @@ let recordingTabId: number | null = null
 let resultTabId: number | null = null
 const enabledTabs = new Set()
 
+function resetRecordingState() {
+  chrome.action.setBadgeText({ text: '' })
+  useStore.setState({ isRecording: false })
+  isRecording = false
+  recordingTabId = null
+  recordingMode = null
+  if (resultTabId) {
+    chrome.tabs.remove(resultTabId).catch(() => {})
+    resultTabId = null
+  }
+  chrome.offscreen.closeDocument().catch(() => {})
+}
+
 function stopRecording() {
   sendMessage({
     type: 'stop-recording',
@@ -41,6 +54,12 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, _tab) => {
 chrome.tabs.onRemoved.addListener((tabId) => {
   if (enabledTabs.has(tabId)) {
     enabledTabs.delete(tabId)
+  }
+  if (tabId === resultTabId) {
+    resultTabId = null
+    if (isRecording) {
+      resetRecordingState()
+    }
   }
 })
 
@@ -120,6 +139,10 @@ chrome.runtime.onMessage.addListener(
         isRecording = false
         recordingTabId = null
         recordingMode = null
+        resultTabId = null
+        break
+      case 'recording-cancelled':
+        resetRecordingState()
         break
       case 'start-recording':
         startRecording(message.data)
