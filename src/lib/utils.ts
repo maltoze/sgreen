@@ -53,7 +53,7 @@ export function isScriptableUrl(url?: string) {
   if (!url) return false
   try {
     const parsed = new URL(url)
-    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:' && parsed.protocol !== 'file:') return false
     if (parsed.hostname === 'chromewebstore.google.com') return false
     return true
   } catch {

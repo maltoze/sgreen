@@ -33,7 +33,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (
     changeInfo.status === 'loading' &&
     enabledTabs.has(tabId) &&
-    isScriptableUrl(tab.url)
+    isScriptableUrl(tab.pendingUrl ?? tab.url)
   ) {
     chrome.scripting.executeScript({
       target: { tabId },
@@ -49,11 +49,12 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 })
 
 chrome.action.onClicked.addListener(async (tab) => {
-  if (!tab.id || !isScriptableUrl(tab.url)) return
+  if (!tab.id) return
 
   if (isRecording) {
     stopRecording()
   } else {
+    if (!isScriptableUrl(tab.url)) return
     if (enabledTabs.has(tab.id)) {
       sendTabMessage(tab.id, { type: 'show-controlbar' })
     } else {
