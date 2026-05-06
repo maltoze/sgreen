@@ -65,17 +65,17 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
     {
       name: 'area',
       label: 'Area',
-      icon: <MarginIcon className="h-5 w-5" />,
+      icon: <MarginIcon className="h-4 w-4" />,
     },
     {
       name: 'tab',
       label: 'Current Tab',
-      icon: <PaddingIcon className="h-5 w-5" />,
+      icon: <PaddingIcon className="h-4 w-4" />,
     },
     {
       name: 'desktop',
       label: 'Desktop',
-      icon: <DesktopIcon className="h-5 w-5" />,
+      icon: <DesktopIcon className="h-4 w-4" />,
     },
   ]
 
