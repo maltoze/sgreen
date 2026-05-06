@@ -61,6 +61,34 @@ export function isScriptableUrl(url?: string) {
   }
 }
 
+const RECEIVING_END_ERROR = 'Receiving end does not exist'
+
+function ignoreReceivingEndError(err: Error) {
+  if (err.message?.includes(RECEIVING_END_ERROR)) {
+    return
+  }
+  throw err
+}
+
+export function sendMessage(message: unknown) {
+  return chrome.runtime.sendMessage(message).catch(ignoreReceivingEndError)
+}
+
+export async function sendTabMessage(
+  tabId: number,
+  message: unknown,
+): Promise<boolean> {
+  try {
+    await chrome.tabs.sendMessage(tabId, message)
+    return true
+  } catch (err) {
+    if (err instanceof Error && err.message?.includes(RECEIVING_END_ERROR)) {
+      return false
+    }
+    throw err
+  }
+}
+
 export function isWindows() {
   return navigator.userAgent.includes('Windows')
 }

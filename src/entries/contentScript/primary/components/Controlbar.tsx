@@ -29,6 +29,7 @@ import {
   TooltipTrigger,
 } from '~/components/ui/tooltip'
 import { tabCaptureModes } from '~/constants'
+import { sendMessage } from '~/lib/utils'
 import { useStore } from '~/entries/store'
 import { RecordingMode } from '~/types'
 
@@ -116,7 +117,7 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
         useStore.setState({ showCountdown: true })
         break
       default:
-        chrome.runtime.sendMessage({
+        sendMessage({
           type: 'start-recording',
           target: 'background',
           data: {
@@ -134,10 +135,12 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
 
   useEffect(() => {
     const resizeObserver = new ResizeObserver(() => {
-      const container = containerRef.current
-      if (container) {
-        setContainerBoundingRect(container.getBoundingClientRect())
-      }
+      requestAnimationFrame(() => {
+        const container = containerRef.current
+        if (container) {
+          setContainerBoundingRect(container.getBoundingClientRect())
+        }
+      })
     })
 
     const container = containerRef.current
