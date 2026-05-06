@@ -281,18 +281,15 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
             </DropdownMenuPortal>
           </DropdownMenu>
           <Divider />
-          <div className="flex items-center gap-1">
-            <Divider />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleStart}
-              className="gap-1.5 rounded-full text-white/80 hover:bg-red-500/15 hover:text-white"
-            >
-              <span className="size-2 rounded-full bg-red-500" />
-              Start
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleStart}
+            className="gap-1.5 rounded-full text-white/80 hover:bg-red-500/15 hover:text-white"
+          >
+            <span className="size-2 rounded-full bg-red-500" />
+            Start
+          </Button>
         </motion.div>
       </div>
     </Draggable>
