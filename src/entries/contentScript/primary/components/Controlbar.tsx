@@ -134,12 +134,10 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
 
   useEffect(() => {
     const resizeObserver = new ResizeObserver(() => {
-      requestAnimationFrame(() => {
-        const container = containerRef.current
-        if (container) {
-          setContainerBoundingRect(container.getBoundingClientRect())
-        }
-      })
+      const container = containerRef.current
+      if (container) {
+        setContainerBoundingRect(container.getBoundingClientRect())
+      }
     })
 
     const container = containerRef.current
