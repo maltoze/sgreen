@@ -243,12 +243,13 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
                     checked={item.checked}
                     onCheckedChange={item.onCheckedChange}
                     key={item.name}
+                    className="text-white/85 focus:bg-white/10 focus:text-white [&_.text-accent-foreground]:!text-white"
                   >
                     {item.label}
                   </DropdownMenuCheckboxItem>
                 ))}
                 <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>
+                  <DropdownMenuSubTrigger className="text-white/85 focus:bg-white/10 focus:text-white data-[state=open]:bg-white/10 data-[state=open]:text-white">
                     <div className="pl-6">Countdown</div>
                   </DropdownMenuSubTrigger>
                   <DropdownMenuPortal
@@ -269,6 +270,7 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
                           <DropdownMenuRadioItem
                             key={`countdown-${second}`}
                             value={second.toString()}
+                            className="text-white/85 focus:bg-white/10 focus:text-white"
                           >
                             {second}s
                           </DropdownMenuRadioItem>
