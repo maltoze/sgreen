@@ -1,5 +1,6 @@
 import { AnimatePresence } from 'framer-motion'
 import { useCallback } from 'react'
+import { sendMessage } from '~/lib/utils'
 import { setIsRecording, useStore } from '../../store'
 import Controlbar from './components/Controlbar'
 import Countdown from './components/Countdown'
@@ -45,7 +46,7 @@ function App({ appRoot }: AppProps) {
     const recordingDelay = 100
     setIsRecording(true)
     setTimeout(() => {
-      chrome.runtime.sendMessage({
+      sendMessage({
         type: 'start-recording',
         target: 'background',
         data: {

@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/browser'
 import { offscreenUrl } from '~/constants'
-import { getCurrentTab, getStreamId, hasOffscreenDocument } from '~/lib/utils'
+import { getCurrentTab, getStreamId, hasOffscreenDocument, sendMessage, sendTabMessage } from '~/lib/utils'
 import { RecordingMode, RecordingOptions } from '~/types'
 import { useStore } from '../store'
 
@@ -17,15 +17,15 @@ let resultTabId: number | null = null
 const enabledTabs = new Set()
 
 function stopRecording() {
-  chrome.runtime.sendMessage({
+  sendMessage({
     type: 'stop-recording',
     target: 'offscreen',
   })
   recordingTabId &&
-    chrome.tabs.sendMessage(recordingTabId, { type: 'stop-recording' })
+    sendTabMessage(recordingTabId, { type: 'stop-recording' })
   if (recordingMode === 'desktop') {
     resultTabId &&
-      chrome.tabs.sendMessage(resultTabId, { type: 'stop-recording' })
+      sendTabMessage(resultTabId, { type: 'stop-recording' })
   }
 }
 
@@ -51,13 +51,13 @@ chrome.action.onClicked.addListener(async (tab) => {
     stopRecording()
   } else {
     if (enabledTabs.has(tab.id)) {
-      chrome.tabs.sendMessage(tab.id, { type: 'show-controlbar' })
+      sendTabMessage(tab.id, { type: 'show-controlbar' })
     } else {
       await chrome.scripting.executeScript({
         target: { tabId: tab.id },
         files: ['/src/entries/contentScript/primary/main.js'],
       })
-      chrome.tabs.sendMessage(tab.id, { type: 'show-controlbar' })
+      sendTabMessage(tab.id, { type: 'show-controlbar' })
       enabledTabs.add(tab.id)
     }
   }
@@ -79,7 +79,7 @@ async function startRecording(data: Partial<RecordingOptions>) {
 
   if (recordingMode && ['tab', 'area'].includes(recordingMode)) {
     const streamId = await getStreamId(tab.id)
-    chrome.runtime.sendMessage({
+    sendMessage({
       type: 'start-recording',
       target: 'offscreen',
       data: { streamId, width: tab.width, height: tab.height, ...data },

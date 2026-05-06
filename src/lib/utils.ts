@@ -49,6 +49,23 @@ export function getStreamId(tabId: number) {
   })
 }
 
+const RECEIVING_END_ERROR = 'Receiving end does not exist'
+
+function ignoreReceivingEndError(err: Error) {
+  if (err.message?.includes(RECEIVING_END_ERROR)) {
+    return
+  }
+  throw err
+}
+
+export function sendMessage(message: unknown) {
+  return chrome.runtime.sendMessage(message).catch(ignoreReceivingEndError)
+}
+
+export function sendTabMessage(tabId: number, message: unknown) {
+  return chrome.tabs.sendMessage(tabId, message).catch(ignoreReceivingEndError)
+}
+
 export function isWindows() {
   return navigator.userAgent.includes('Windows')
 }
