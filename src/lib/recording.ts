@@ -1,5 +1,6 @@
 import fixWebmDuration from 'fix-webm-duration'
 import { defaultRecordingMode, tabCaptureModes } from '~/constants'
+import { sendMessage } from '~/lib/utils'
 import { RecordingOptions } from '~/types'
 
 const recorderMimeType = 'video/webm'
@@ -144,7 +145,7 @@ class Recorder {
       const fixedBlob = await fixWebmDuration(blob, duration, { logger: false })
 
       const url = URL.createObjectURL(fixedBlob)
-      chrome.runtime.sendMessage({
+      sendMessage({
         type: 'recording-complete',
         target: 'background',
         videoUrl: url,
