@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/browser'
 import { offscreenUrl } from '~/constants'
-import { getCurrentTab, getStreamId, hasOffscreenDocument } from '~/lib/utils'
+import { getCurrentTab, getStreamId, hasOffscreenDocument, isScriptableUrl } from '~/lib/utils'
 import { RecordingMode, RecordingOptions } from '~/types'
 import { useStore } from '../store'
 
@@ -29,8 +29,12 @@ function stopRecording() {
   }
 }
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, _tab) => {
-  if (changeInfo.status === 'loading' && enabledTabs.has(tabId)) {
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (
+    changeInfo.status === 'loading' &&
+    enabledTabs.has(tabId) &&
+    isScriptableUrl(tab.url)
+  ) {
     chrome.scripting.executeScript({
       target: { tabId },
       files: ['/src/entries/contentScript/primary/main.js'],
@@ -45,7 +49,7 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 })
 
 chrome.action.onClicked.addListener(async (tab) => {
-  if (!tab.id) return
+  if (!tab.id || !isScriptableUrl(tab.url)) return
 
   if (isRecording) {
     stopRecording()

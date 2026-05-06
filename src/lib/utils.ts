@@ -49,6 +49,18 @@ export function getStreamId(tabId: number) {
   })
 }
 
+export function isScriptableUrl(url?: string) {
+  if (!url) return false
+  try {
+    const parsed = new URL(url)
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false
+    if (parsed.hostname === 'chromewebstore.google.com') return false
+    return true
+  } catch {
+    return false
+  }
+}
+
 export function isWindows() {
   return navigator.userAgent.includes('Windows')
 }
