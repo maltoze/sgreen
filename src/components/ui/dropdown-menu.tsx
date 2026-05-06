@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu'
 import {
   CheckIcon,
