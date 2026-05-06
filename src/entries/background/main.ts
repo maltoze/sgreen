@@ -17,6 +17,9 @@ let resultTabId: number | null = null
 const enabledTabs = new Set()
 
 function resetRecordingState() {
+  if (recordingTabId) {
+    sendTabMessage(recordingTabId, { type: 'stop-recording' })
+  }
   chrome.action.setBadgeText({ text: '' })
   useStore.setState({ isRecording: false })
   isRecording = false
@@ -60,6 +63,9 @@ chrome.tabs.onRemoved.addListener((tabId) => {
     if (isRecording) {
       resetRecordingState()
     }
+  }
+  if (tabId === recordingTabId && isRecording) {
+    resetRecordingState()
   }
 })
 
