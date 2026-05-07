@@ -122,7 +122,9 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     enabledTabs.has(tabId) &&
     isScriptableUrl(tab.pendingUrl ?? tab.url)
   ) {
-    executeContentScript(tabId)
+    void executeContentScript(tabId).catch((err) =>
+      Sentry.captureException(err),
+    )
   }
 })
 
@@ -148,6 +150,7 @@ chrome.action.onClicked.addListener(async (tab) => {
     stopRecording()
   } else {
     if (!isScriptableUrl(tab.url)) {
+      enabledTabs.delete(tab.id)
       await chrome.action.disable(tab.id)
       return
     }
