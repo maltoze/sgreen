@@ -2,6 +2,8 @@
 **/node_modules
 .DS_Store
 storybook-static
+.env*
+!.env.example
 # Sentry Auth Token
 .env.sentry-build-plugin
 .claude/
