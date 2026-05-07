@@ -16,6 +16,7 @@
     "build-storybook": "DISABLE_WEBEXTENSION=1 storybook build",
     "prepare": "husky install"
   },
+  "packageManager": "pnpm@10.7.1",
   "license": "AGPL-3.0",
   "devDependencies": {
     "@biomejs/biome": "^2.4.14",
