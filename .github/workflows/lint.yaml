@@ -19,7 +19,7 @@ jobs:
         name: Install pnpm
         id: pnpm-install
         with:
-          version: 8
+          version: latest
           run_install: true
 
       - name: Run type check
