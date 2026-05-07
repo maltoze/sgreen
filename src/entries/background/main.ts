@@ -14,10 +14,14 @@ import { useStore } from '../store'
 let captureException: (err: unknown) => void = () => {}
 
 if (import.meta.env.MODE === 'production') {
-  captureException = Sentry.captureException
-  Sentry.init({
-    dsn: 'https://d12dd277a192c6ca69ba59ebb958e6e2@o82598.ingest.sentry.io/4505787043479552',
-  })
+  try {
+    Sentry.init({
+      dsn: 'https://d12dd277a192c6ca69ba59ebb958e6e2@o82598.ingest.sentry.io/4505787043479552',
+    })
+    captureException = Sentry.captureException
+  } catch (err) {
+    console.error('Sentry initialization failed:', err)
+  }
 }
 
 let isRecording = false
