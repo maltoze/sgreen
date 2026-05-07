@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/browser'
 import { offscreenUrl } from '~/constants'
 import {
   getCurrentTab,
@@ -11,10 +10,16 @@ import {
 import { RecordingMode, RecordingOptions } from '~/types'
 import { useStore } from '../store'
 
-if (process.env.NODE_ENV === 'production') {
-  Sentry.init({
-    dsn: 'https://d12dd277a192c6ca69ba59ebb958e6e2@o82598.ingest.sentry.io/4505787043479552',
-  })
+if (import.meta.env.MODE === 'production') {
+  void import('@sentry/browser')
+    .then(({ init }) =>
+      init({
+        dsn: 'https://d12dd277a192c6ca69ba59ebb958e6e2@o82598.ingest.sentry.io/4505787043479552',
+      }),
+    )
+    .catch((error) => {
+      console.error('Failed to initialize Sentry in background.', error)
+    })
 }
 
 let isRecording = false

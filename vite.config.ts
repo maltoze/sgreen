@@ -5,7 +5,10 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { getManifest } from './src/manifest'
 
-export default defineConfig(() => {
+export default defineConfig(({ mode }) => {
+  const isProduction = mode === 'production'
+  const enableSentryUpload = isProduction && !!process.env.SENTRY_AUTH_TOKEN
+
   return {
     plugins: [
       react(),
@@ -22,11 +25,16 @@ export default defineConfig(() => {
             },
           })
         : undefined,
-      sentryVitePlugin({
-        authToken: process.env.SENTRY_AUTH_TOKEN,
-        org: 'maltoze',
-        project: 'sgreen',
-      }),
+      enableSentryUpload
+        ? sentryVitePlugin({
+            authToken: process.env.SENTRY_AUTH_TOKEN,
+            org: 'maltoze',
+            project: 'sgreen',
+            sourcemaps: {
+              filesToDeleteAfterUpload: ['dist/**/*.map'],
+            },
+          })
+        : undefined,
     ],
     resolve: {
       alias: {
@@ -37,7 +45,7 @@ export default defineConfig(() => {
       port: 4173,
     },
     build: {
-      sourcemap: true,
+      sourcemap: enableSentryUpload ? 'hidden' : false,
     },
   }
 })
