@@ -20,7 +20,10 @@ type DropdownMenuPortalProps = Omit<
   container?: Element | DocumentFragment | null
 }
 
-const DropdownMenuPortal = ({ container, ...props }: DropdownMenuPortalProps) => (
+const DropdownMenuPortal = ({
+  container,
+  ...props
+}: DropdownMenuPortalProps) => (
   <DropdownMenuPrimitive.Portal
     container={container as HTMLElement | null | undefined}
     {...props}
