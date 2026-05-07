@@ -21,7 +21,59 @@ let isRecording = false
 let recordingMode: RecordingMode | null
 let recordingTabId: number | null = null
 let resultTabId: number | null = null
-const enabledTabs = new Set()
+const enabledTabs = new Set<number>()
+
+const SCRIPT_ACCESS_ERROR_MESSAGES = [
+  'Cannot access a chrome-extension:// URL of different extension',
+  'Cannot access contents of url',
+  'The extensions gallery cannot be scripted',
+]
+
+function isScriptAccessError(err: unknown) {
+  return (
+    err instanceof Error &&
+    SCRIPT_ACCESS_ERROR_MESSAGES.some((message) =>
+      err.message?.includes(message),
+    )
+  )
+}
+
+async function updateActionState(tabId: number, url?: string) {
+  if (isRecording) {
+    await chrome.action.enable(tabId)
+    return
+  }
+
+  if (isScriptableUrl(url)) {
+    await chrome.action.enable(tabId)
+  } else {
+    enabledTabs.delete(tabId)
+    await chrome.action.disable(tabId)
+  }
+}
+
+async function updateCurrentActionState() {
+  const tab = await getCurrentTab()
+  if (!tab.id) return
+  await updateActionState(tab.id, tab.pendingUrl ?? tab.url)
+}
+
+async function executeContentScript(tabId: number) {
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      files: ['/src/entries/contentScript/primary/main.js'],
+    })
+    return true
+  } catch (err) {
+    if (isScriptAccessError(err)) {
+      enabledTabs.delete(tabId)
+      await chrome.action.disable(tabId)
+      return false
+    }
+    throw err
+  }
+}
 
 function resetRecordingState() {
   if (recordingTabId) {
@@ -37,6 +89,7 @@ function resetRecordingState() {
     resultTabId = null
   }
   chrome.offscreen.closeDocument().catch(() => {})
+  updateCurrentActionState().catch(() => {})
 }
 
 function stopRecording() {
@@ -50,16 +103,28 @@ function stopRecording() {
   }
 }
 
+chrome.tabs.onActivated.addListener(({ tabId }) => {
+  chrome.tabs
+    .get(tabId)
+    .then((tab) => updateActionState(tabId, tab.pendingUrl ?? tab.url))
+    .catch(() => {})
+})
+
+updateCurrentActionState().catch(() => {})
+
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'loading' || changeInfo.url) {
+    updateActionState(tabId, tab.pendingUrl ?? tab.url).catch(() => {})
+  }
+
   if (
     changeInfo.status === 'loading' &&
     enabledTabs.has(tabId) &&
     isScriptableUrl(tab.pendingUrl ?? tab.url)
   ) {
-    chrome.scripting.executeScript({
-      target: { tabId },
-      files: ['/src/entries/contentScript/primary/main.js'],
-    })
+    void executeContentScript(tabId).catch((err) =>
+      Sentry.captureException(err),
+    )
   }
 })
 
@@ -84,14 +149,17 @@ chrome.action.onClicked.addListener(async (tab) => {
   if (isRecording) {
     stopRecording()
   } else {
-    if (!isScriptableUrl(tab.url)) return
+    if (!isScriptableUrl(tab.url)) {
+      enabledTabs.delete(tab.id)
+      await chrome.action.disable(tab.id)
+      return
+    }
     if (enabledTabs.has(tab.id)) {
       sendTabMessage(tab.id, { type: 'show-controlbar' })
     } else {
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        files: ['/src/entries/contentScript/primary/main.js'],
-      })
+      const injected = await executeContentScript(tab.id)
+      if (!injected) return
+
       const delivered = await sendTabMessage(tab.id, {
         type: 'show-controlbar',
       })
@@ -134,6 +202,7 @@ async function startRecording(data: Partial<RecordingOptions>) {
   chrome.action.setBadgeTextColor({ color: '#ffffff' })
   chrome.action.setBadgeBackgroundColor({ color: '#dc2626' })
   isRecording = true
+  chrome.action.enable().catch(() => {})
 }
 
 chrome.runtime.onMessage.addListener(
@@ -144,9 +213,11 @@ chrome.runtime.onMessage.addListener(
     switch (message.type) {
       case 'recording-complete':
         if (recordingMode === 'desktop') {
-          resultTabId && chrome.tabs.update(resultTabId, { active: true })
+          if (resultTabId) {
+            await chrome.tabs.update(resultTabId, { active: true })
+          }
         } else {
-          chrome.tabs.create({
+          await chrome.tabs.create({
             url: `/src/entries/tabs/main.html?videoUrl=${encodeURIComponent(
               message.videoUrl,
             )}`,
@@ -158,6 +229,7 @@ chrome.runtime.onMessage.addListener(
         recordingTabId = null
         recordingMode = null
         resultTabId = null
+        updateCurrentActionState().catch(() => {})
         break
       case 'recording-cancelled':
         resetRecordingState()

@@ -23,6 +23,7 @@ const manifest: Partial<chrome.runtime.ManifestV3> = {
     'offscreen',
     'storage',
     'desktopCapture',
+    'tabs',
     // chrome.windows
     'scripting',
   ],
