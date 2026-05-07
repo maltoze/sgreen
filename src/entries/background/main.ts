@@ -10,13 +10,16 @@ import {
 import { RecordingMode, RecordingOptions } from '~/types'
 import { useStore } from '../store'
 
+let captureException: (err: unknown) => void = () => {}
+
 if (import.meta.env.MODE === 'production') {
   void import('@sentry/browser')
-    .then(({ init }) =>
-      init({
+    .then((Sentry) => {
+      captureException = Sentry.captureException
+      Sentry.init({
         dsn: 'https://d12dd277a192c6ca69ba59ebb958e6e2@o82598.ingest.sentry.io/4505787043479552',
-      }),
-    )
+      })
+    })
     .catch((error) => {
       console.error('Failed to initialize Sentry in background.', error)
     })
@@ -127,9 +130,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     enabledTabs.has(tabId) &&
     isScriptableUrl(tab.pendingUrl ?? tab.url)
   ) {
-    void executeContentScript(tabId).catch((err) =>
-      Sentry.captureException(err),
-    )
+    void executeContentScript(tabId).catch((err) => captureException(err))
   }
 })
 
