@@ -2,12 +2,14 @@ import path from 'path'
 import webExtension from '@samrum/vite-plugin-web-extension'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import { getManifest } from './src/manifest'
 
 export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
   const isProduction = mode === 'production'
-  const enableSentryUpload = isProduction && !!process.env.SENTRY_AUTH_TOKEN
+  const sentryAuthToken = env.SENTRY_AUTH_TOKEN
+  const enableSentryUpload = isProduction && !!sentryAuthToken
 
   return {
     plugins: [
@@ -27,7 +29,7 @@ export default defineConfig(({ mode }) => {
         : undefined,
       enableSentryUpload
         ? sentryVitePlugin({
-            authToken: process.env.SENTRY_AUTH_TOKEN,
+            authToken: sentryAuthToken,
             org: 'maltoze',
             project: 'sgreen',
             sourcemaps: {
