@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Confetti from 'react-confetti'
 import Recorder from '~/lib/recording'
+import { sendMessage } from '~/lib/utils'
 import { RecordingOptions } from '~/types'
 
 const params = new URLSearchParams(location.search)
@@ -23,6 +24,14 @@ export default function App() {
     const desktopMediaRequestId = chrome.desktopCapture.chooseDesktopMedia(
       ['screen', 'window', 'audio'],
       (streamId, { canRequestAudioTrack }) => {
+        if (!streamId) {
+          sendMessage({
+            type: 'recording-cancelled',
+            target: 'background',
+          })
+          window.close()
+          return
+        }
         recorder.start(
           {
             streamId,

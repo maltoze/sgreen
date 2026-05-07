@@ -112,9 +112,18 @@ class Recorder {
       video: videoConstraints,
     }
 
-    this.media = await navigator.mediaDevices.getUserMedia(
-      mediaStreamConstraints,
-    )
+    try {
+      this.media = await navigator.mediaDevices.getUserMedia(
+        mediaStreamConstraints,
+      )
+    } catch (err) {
+      console.error('Failed to get media stream:', err)
+      sendMessage({
+        type: 'recording-cancelled',
+        target: 'background',
+      })
+      return
+    }
 
     if (audio) {
       const audioContext = new AudioContext()

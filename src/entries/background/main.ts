@@ -4,6 +4,7 @@ import {
   getCurrentTab,
   getStreamId,
   hasOffscreenDocument,
+  isScriptableUrl,
   sendMessage,
   sendTabMessage,
 } from '~/lib/utils'
@@ -22,6 +23,22 @@ let recordingTabId: number | null = null
 let resultTabId: number | null = null
 const enabledTabs = new Set()
 
+function resetRecordingState() {
+  if (recordingTabId) {
+    sendTabMessage(recordingTabId, { type: 'stop-recording' })
+  }
+  chrome.action.setBadgeText({ text: '' })
+  useStore.setState({ isRecording: false })
+  isRecording = false
+  recordingTabId = null
+  recordingMode = null
+  if (resultTabId) {
+    chrome.tabs.remove(resultTabId).catch(() => {})
+    resultTabId = null
+  }
+  chrome.offscreen.closeDocument().catch(() => {})
+}
+
 function stopRecording() {
   sendMessage({
     type: 'stop-recording',
@@ -33,8 +50,12 @@ function stopRecording() {
   }
 }
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, _tab) => {
-  if (changeInfo.status === 'loading' && enabledTabs.has(tabId)) {
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (
+    changeInfo.status === 'loading' &&
+    enabledTabs.has(tabId) &&
+    isScriptableUrl(tab.pendingUrl ?? tab.url)
+  ) {
     chrome.scripting.executeScript({
       target: { tabId },
       files: ['/src/entries/contentScript/primary/main.js'],
@@ -46,6 +67,15 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   if (enabledTabs.has(tabId)) {
     enabledTabs.delete(tabId)
   }
+  if (tabId === resultTabId) {
+    resultTabId = null
+    if (isRecording) {
+      resetRecordingState()
+    }
+  }
+  if (tabId === recordingTabId && isRecording) {
+    resetRecordingState()
+  }
 })
 
 chrome.action.onClicked.addListener(async (tab) => {
@@ -54,6 +84,7 @@ chrome.action.onClicked.addListener(async (tab) => {
   if (isRecording) {
     stopRecording()
   } else {
+    if (!isScriptableUrl(tab.url)) return
     if (enabledTabs.has(tab.id)) {
       sendTabMessage(tab.id, { type: 'show-controlbar' })
     } else {
@@ -126,6 +157,10 @@ chrome.runtime.onMessage.addListener(
         isRecording = false
         recordingTabId = null
         recordingMode = null
+        resultTabId = null
+        break
+      case 'recording-cancelled':
+        resetRecordingState()
         break
       case 'start-recording':
         startRecording(message.data)
