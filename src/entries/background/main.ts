@@ -130,9 +130,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     enabledTabs.has(tabId) &&
     isScriptableUrl(tab.pendingUrl ?? tab.url)
   ) {
-    void executeContentScript(tabId).catch((err) =>
-      captureException(err),
-    )
+    void executeContentScript(tabId).catch((err) => captureException(err))
   }
 })
 
