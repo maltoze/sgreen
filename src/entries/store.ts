@@ -57,10 +57,10 @@ export const useStore = create<IState>()(
       storage: createJSONStorage(() => chromeLocalStorage),
       partialize: (state) =>
         Object.fromEntries(
-          Object.entries(state).filter(([key]) => persistKeys.includes(key))
+          Object.entries(state).filter(([key]) => persistKeys.includes(key)),
         ),
-    }
-  )
+    },
+  ),
 )
 
 export const setIsRecording = (recording: boolean) =>

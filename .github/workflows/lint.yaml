@@ -25,5 +25,5 @@ jobs:
       - name: Run type check
         run: pnpm tsc
 
-      - name: Run eslint
+      - name: Run biome
         run: pnpm lint

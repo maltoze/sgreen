@@ -6,8 +6,8 @@ export default function WindowIcon({ className }: IconProps) {
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
-      stroke='currentColor'
-      strokeWidth={1.5} 
+      stroke="currentColor"
+      strokeWidth={1.5}
       className={className}
       width={15}
       height={15}

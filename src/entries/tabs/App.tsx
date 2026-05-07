@@ -29,10 +29,10 @@ export default function App() {
             audio: canRequestAudioTrack,
             recordingMode: 'desktop',
           } as RecordingOptions,
-          (url) => setVideoUrl(url)
+          (url) => setVideoUrl(url),
         )
         tabId && chrome.tabs.update(parseInt(tabId), { active: true })
-      }
+      },
     )
     return () => {
       chrome.desktopCapture.cancelChooseDesktopMedia(desktopMediaRequestId)

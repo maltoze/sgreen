@@ -29,8 +29,8 @@ import {
   TooltipTrigger,
 } from '~/components/ui/tooltip'
 import { tabCaptureModes } from '~/constants'
-import { sendMessage } from '~/lib/utils'
 import { useStore } from '~/entries/store'
+import { sendMessage } from '~/lib/utils'
 import { RecordingMode } from '~/types'
 
 interface RecordingModeOption {
