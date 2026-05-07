@@ -13,7 +13,9 @@ if (import.meta.env.MODE === 'production') {
         dsn: 'https://d12dd277a192c6ca69ba59ebb958e6e2@o82598.ingest.sentry.io/4505787043479552',
       }),
     )
-    .catch(() => {})
+    .catch((error) => {
+      console.error('Failed to initialize Sentry in content script.', error)
+    })
 }
 
 chrome.runtime.onMessage.addListener((message, _sener, _sendResponse) => {
