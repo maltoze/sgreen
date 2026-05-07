@@ -11,11 +11,13 @@ import { RecordingMode, RecordingOptions } from '~/types'
 import { useStore } from '../store'
 
 if (import.meta.env.MODE === 'production') {
-  void import('@sentry/browser').then(({ init }) =>
-    init({
-      dsn: 'https://d12dd277a192c6ca69ba59ebb958e6e2@o82598.ingest.sentry.io/4505787043479552',
-    }),
-  )
+  void import('@sentry/browser')
+    .then(({ init }) =>
+      init({
+        dsn: 'https://d12dd277a192c6ca69ba59ebb958e6e2@o82598.ingest.sentry.io/4505787043479552',
+      }),
+    )
+    .catch(() => {})
 }
 
 let isRecording = false

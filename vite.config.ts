@@ -45,7 +45,7 @@ export default defineConfig(({ mode }) => {
       port: 4173,
     },
     build: {
-      sourcemap: enableSentryUpload,
+      sourcemap: enableSentryUpload ? 'hidden' : false,
     },
   }
 })

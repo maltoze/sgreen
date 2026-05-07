@@ -7,11 +7,13 @@ import '~/style.css'
 import { useStore } from '~/entries/store'
 
 if (import.meta.env.MODE === 'production') {
-  void import('@sentry/react').then(({ init }) =>
-    init({
-      dsn: 'https://d12dd277a192c6ca69ba59ebb958e6e2@o82598.ingest.sentry.io/4505787043479552',
-    }),
-  )
+  void import('@sentry/react')
+    .then(({ init }) =>
+      init({
+        dsn: 'https://d12dd277a192c6ca69ba59ebb958e6e2@o82598.ingest.sentry.io/4505787043479552',
+      }),
+    )
+    .catch(() => {})
 }
 
 chrome.runtime.onMessage.addListener((message, _sener, _sendResponse) => {
