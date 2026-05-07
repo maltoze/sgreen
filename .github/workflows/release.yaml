@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: true
+
+      - name: Validate tag version
+        run: |
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+          if [ "v${PACKAGE_VERSION}" != "${GITHUB_REF_NAME}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match package version ${PACKAGE_VERSION}"
+            exit 1
+          fi
+
+      - name: Run type check
+        run: pnpm tsc
+
+      - name: Run biome
+        run: pnpm lint
+
+      - name: Build extension
+        run: pnpm build
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+
+      - name: Package extension
+        id: package
+        run: |
+          mkdir -p releases
+          ASSET_NAME="sgreen-${GITHUB_REF_NAME}.zip"
+          (cd dist && zip -r "../releases/${ASSET_NAME}" .)
+          echo "asset_path=releases/${ASSET_NAME}" >> "$GITHUB_OUTPUT"
+          echo "asset_name=${ASSET_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.package.outputs.asset_name }}
+          path: ${{ steps.package.outputs.asset_path }}
+
+      - name: Create GitHub release
+        run: gh release create "${GITHUB_REF_NAME}" "${{ steps.package.outputs.asset_path }}" --title "${GITHUB_REF_NAME}" --notes "Release ${GITHUB_REF_NAME}" --verify-tag
+        env:
+          GH_TOKEN: ${{ github.token }}
