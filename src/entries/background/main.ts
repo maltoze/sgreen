@@ -1,6 +1,13 @@
 import * as Sentry from '@sentry/browser'
 import { offscreenUrl } from '~/constants'
-import { getCurrentTab, getStreamId, hasOffscreenDocument, isScriptableUrl, sendMessage, sendTabMessage } from '~/lib/utils'
+import {
+  getCurrentTab,
+  getStreamId,
+  hasOffscreenDocument,
+  isScriptableUrl,
+  sendMessage,
+  sendTabMessage,
+} from '~/lib/utils'
 import { RecordingMode, RecordingOptions } from '~/types'
 import { useStore } from '../store'
 
@@ -37,11 +44,9 @@ function stopRecording() {
     type: 'stop-recording',
     target: 'offscreen',
   })
-  recordingTabId &&
-    sendTabMessage(recordingTabId, { type: 'stop-recording' })
+  recordingTabId && sendTabMessage(recordingTabId, { type: 'stop-recording' })
   if (recordingMode === 'desktop') {
-    resultTabId &&
-      sendTabMessage(resultTabId, { type: 'stop-recording' })
+    resultTabId && sendTabMessage(resultTabId, { type: 'stop-recording' })
   }
 }
 
@@ -87,7 +92,9 @@ chrome.action.onClicked.addListener(async (tab) => {
         target: { tabId: tab.id },
         files: ['/src/entries/contentScript/primary/main.js'],
       })
-      const delivered = await sendTabMessage(tab.id, { type: 'show-controlbar' })
+      const delivered = await sendTabMessage(tab.id, {
+        type: 'show-controlbar',
+      })
       if (delivered) {
         enabledTabs.add(tab.id)
       }
@@ -141,7 +148,7 @@ chrome.runtime.onMessage.addListener(
         } else {
           chrome.tabs.create({
             url: `/src/entries/tabs/main.html?videoUrl=${encodeURIComponent(
-              message.videoUrl
+              message.videoUrl,
             )}`,
           })
         }
@@ -161,5 +168,5 @@ chrome.runtime.onMessage.addListener(
       default:
         throw new Error('Unrecognized message:', message.type)
     }
-  }
+  },
 )

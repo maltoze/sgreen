@@ -20,7 +20,10 @@ type DropdownMenuPortalProps = Omit<
   container?: Element | DocumentFragment | null
 }
 
-const DropdownMenuPortal = ({ container, ...props }: DropdownMenuPortalProps) => (
+const DropdownMenuPortal = ({
+  container,
+  ...props
+}: DropdownMenuPortalProps) => (
   <DropdownMenuPrimitive.Portal
     container={container as HTMLElement | null | undefined}
     {...props}
@@ -195,18 +198,18 @@ DropdownMenuShortcut.displayName = 'DropdownMenuShortcut'
 
 export {
   DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuCheckboxItem,
-  DropdownMenuRadioItem,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
-  DropdownMenuGroup,
-  DropdownMenuPortal,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
-  DropdownMenuRadioGroup,
+  DropdownMenuTrigger,
 }

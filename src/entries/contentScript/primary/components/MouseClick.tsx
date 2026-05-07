@@ -16,7 +16,7 @@ export default function MouseClick() {
         setPosition({ x: e.clientX, y: e.clientY })
       }
     },
-    [isPointerDown]
+    [isPointerDown],
   )
 
   function handlePointerUp(_e: PointerEvent | DragEvent) {

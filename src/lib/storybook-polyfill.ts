@@ -8,7 +8,7 @@ const chromePolyfill = {
 
       set: (items: { [key: string]: string }) => {
         Object.keys(items).forEach((key) =>
-          localStorage.setItem(key, items[key])
+          localStorage.setItem(key, items[key]),
         )
       },
       remove: (key: string, callback: () => void) => {

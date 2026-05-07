@@ -29,8 +29,8 @@ import {
   TooltipTrigger,
 } from '~/components/ui/tooltip'
 import { tabCaptureModes } from '~/constants'
-import { sendMessage } from '~/lib/utils'
 import { useStore } from '~/entries/store'
+import { sendMessage } from '~/lib/utils'
 import { RecordingMode } from '~/types'
 
 interface RecordingModeOption {
@@ -202,12 +202,11 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
                 key={mode.name}
                 variant="ghost"
                 size="sm"
-                onClick={() =>
-                  useStore.setState({ recordingMode: mode.name })
-                }
+                onClick={() => useStore.setState({ recordingMode: mode.name })}
                 className={clsx(
                   'gap-1.5 rounded-full text-white/75 hover:bg-white/10 hover:text-white',
-                  isActive && 'bg-white/15 text-white [&_svg]:text-green-400 hover:bg-white/15'
+                  isActive &&
+                    'bg-white/15 text-white [&_svg]:text-green-400 hover:bg-white/15',
                 )}
               >
                 {mode.icon}
@@ -249,9 +248,7 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
                   <DropdownMenuSubTrigger className="text-white/85 focus:bg-white/10 focus:text-white data-[state=open]:bg-white/10 data-[state=open]:text-white">
                     <div className="pl-6">Countdown</div>
                   </DropdownMenuSubTrigger>
-                  <DropdownMenuPortal
-                    container={appRoot}
-                  >
+                  <DropdownMenuPortal container={appRoot}>
                     <DropdownMenuSubContent
                       className="z-[2147483647] min-w-[5rem] rounded-xl border border-white/10 bg-neutral-900/80 tabular-nums backdrop-blur-md"
                       sideOffset={4}

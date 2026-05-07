@@ -1,4 +1,4 @@
-import { clsx, type ClassValue } from 'clsx'
+import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { offscreenUrl } from '~/constants'
 
@@ -53,7 +53,12 @@ export function isScriptableUrl(url?: string) {
   if (!url) return false
   try {
     const parsed = new URL(url)
-    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:' && parsed.protocol !== 'file:') return false
+    if (
+      parsed.protocol !== 'http:' &&
+      parsed.protocol !== 'https:' &&
+      parsed.protocol !== 'file:'
+    )
+      return false
     if (parsed.hostname === 'chromewebstore.google.com') return false
     return true
   } catch {

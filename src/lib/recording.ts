@@ -24,7 +24,7 @@ class Recorder {
   }
 
   private getChromeMediaSource(
-    recordingMode: RecordingOptions['recordingMode']
+    recordingMode: RecordingOptions['recordingMode'],
   ) {
     return tabCaptureModes.includes(recordingMode) ? 'tab' : 'desktop'
   }
@@ -54,7 +54,7 @@ class Recorder {
         0,
         0,
         area.width,
-        area.height
+        area.height,
       )
       this.drawTimerId = setTimeout(drawFrame, 1000 / frameRate)
     }
@@ -75,7 +75,7 @@ class Recorder {
       recordingMode = defaultRecordingMode,
       area,
     }: RecordingOptions,
-    callback?: (url: string) => void
+    callback?: (url: string) => void,
   ) {
     if (this.recorder?.state === 'recording') {
       throw new Error('Called startRecording while recording is in progress.')
@@ -114,7 +114,7 @@ class Recorder {
 
     try {
       this.media = await navigator.mediaDevices.getUserMedia(
-        mediaStreamConstraints
+        mediaStreamConstraints,
       )
     } catch (err) {
       console.error('Failed to get media stream:', err)

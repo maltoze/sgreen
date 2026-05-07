@@ -7,12 +7,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 pnpm build                  # Production build
 pnpm watch                  # Dev build with watch (no minify)
-pnpm lint                   # ESLint (--max-warnings 0, uses cache)
+pnpm lint                   # Biome check (lint + format)
+pnpm format                 # Biome format --write
 pnpm tsc                    # TypeScript type-check (noEmit)
 pnpm storybook              # Run Storybook on port 6006 (DISABLE_WEBEXTENSION=1)
 ```
 
-The package manager is **pnpm v8**. CI (`.github/workflows/lint.yaml`) runs `pnpm tsc` then `pnpm lint`. A Husky pre-push hook runs the same checks.
+The package manager is **pnpm v10**. CI (`.github/workflows/lint.yaml`) runs `pnpm tsc` then `pnpm lint`. A Husky pre-push hook runs the same checks.
 
 ## Architecture
 
