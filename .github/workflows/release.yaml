@@ -15,11 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        name: Install pnpm
-        with:
-          run_install: true
-
       - name: Validate tag version
         run: |
           PACKAGE_VERSION="$(node -p "require('./package.json').version")"
@@ -27,6 +22,11 @@ jobs:
             echo "Tag ${GITHUB_REF_NAME} does not match package version ${PACKAGE_VERSION}"
             exit 1
           fi
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: true
 
       - name: Run type check
         run: pnpm tsc
