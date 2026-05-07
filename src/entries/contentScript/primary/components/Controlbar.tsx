@@ -228,10 +228,7 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
                 <CaretDownIcon className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuPortal
-              // @ts-ignore
-              container={appRoot}
-            >
+            <DropdownMenuPortal container={appRoot}>
               <DropdownMenuContent
                 className="z-[2147483647] w-52 rounded-xl border border-white/10 bg-neutral-900/80 backdrop-blur-md"
                 sideOffset={10}
@@ -253,7 +250,6 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
                     <div className="pl-6">Countdown</div>
                   </DropdownMenuSubTrigger>
                   <DropdownMenuPortal
-                    // @ts-ignore
                     container={appRoot}
                   >
                     <DropdownMenuSubContent
@@ -262,9 +258,12 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
                     >
                       <DropdownMenuRadioGroup
                         value={countdown.toString()}
-                        onValueChange={(value) =>
-                          useStore.setState({ countdown: parseInt(value) })
-                        }
+                        onValueChange={(value) => {
+                          const nextCountdown = Number.parseInt(value, 10)
+                          if (Number.isNaN(nextCountdown)) return
+
+                          useStore.setState({ countdown: nextCountdown })
+                        }}
                       >
                         {[0, 1, 3, 5, 7, 10].map((second) => (
                           <DropdownMenuRadioItem
