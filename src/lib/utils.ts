@@ -101,3 +101,51 @@ export function isWindows() {
 export function isMac() {
   return navigator.userAgent.includes('Macintosh')
 }
+
+const macModifiers: Record<string, string> = {
+  MetaLeft: '⌘',
+  MetaRight: '⌘',
+  AltLeft: '⌥',
+  AltRight: '⌥',
+  ControlLeft: '⌃',
+  ControlRight: '⌃',
+  ShiftLeft: '⇧',
+  ShiftRight: '⇧',
+}
+
+const windowsModifiers: Record<string, string> = {
+  MetaLeft: '⊞',
+  MetaRight: '⊞',
+  AltLeft: 'Alt',
+  AltRight: 'Alt',
+  ControlLeft: 'Ctrl',
+  ControlRight: 'Ctrl',
+  ShiftLeft: 'Shift',
+  ShiftRight: 'Shift',
+}
+
+export function getModifierKeyLabel(code: string): string | null {
+  if (isMac()) return macModifiers[code] ?? null
+  if (isWindows()) return windowsModifiers[code] ?? null
+  return null
+}
+
+/** Modifier key priority for ordering (lower = displayed first) */
+const modifierPriority: Record<string, number> = {
+  MetaLeft: 0,
+  MetaRight: 0,
+  ControlLeft: 1,
+  ControlRight: 1,
+  AltLeft: 2,
+  AltRight: 2,
+  ShiftLeft: 3,
+  ShiftRight: 3,
+}
+
+export function sortKeysForDisplay(codes: string[]): string[] {
+  return [...codes].sort((a, b) => {
+    const pa = modifierPriority[a] ?? 999
+    const pb = modifierPriority[b] ?? 999
+    return pa - pb || a.localeCompare(b)
+  })
+}
