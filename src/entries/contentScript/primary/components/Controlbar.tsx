@@ -65,17 +65,17 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
     {
       name: 'area',
       label: 'Area',
-      icon: <MarginIcon className="h-5 w-5" />,
+      icon: <MarginIcon className="h-4 w-4" />,
     },
     {
       name: 'tab',
       label: 'Current Tab',
-      icon: <PaddingIcon className="h-5 w-5" />,
+      icon: <PaddingIcon className="h-4 w-4" />,
     },
     {
       name: 'desktop',
       label: 'Desktop',
-      icon: <DesktopIcon className="h-5 w-5" />,
+      icon: <DesktopIcon className="h-4 w-4" />,
     },
   ]
 
@@ -171,133 +171,126 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
         className="fixed bottom-4 left-1/2 z-[2147483646]"
       >
         <motion.div
-          className="flex space-x-2 rounded-xl bg-background/50 p-1.5 shadow-[0_1px_2px_0px_rgb(0_0_0_/0.1),0_-1px_2px_-1px_rgb(0_0_0_/0.1)] backdrop-blur"
+          className="flex items-center gap-1 rounded-full bg-neutral-900/80 px-2 py-1.5 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.25)]"
           ref={containerRef}
           initial={{ opacity: 0, y: 20, x: '-50%' }}
           animate={{ opacity: 1, y: 0, x: '-50%' }}
           exit={{ opacity: 0, y: 60, x: '-50%' }}
         >
-          <div className="flex items-center">
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <Cross2Icon className="h-5 w-5" />
-            </Button>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Divider />
-            {recordingModes.map((mode) => (
-              <TooltipProvider key={mode.name}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        useStore.setState({
-                          recordingMode: mode.name,
-                        })
-                      }
-                      className={clsx({
-                        'cursor-default text-green-500 hover:bg-transparent hover:text-green-500':
-                          mode.name === recordingMode,
-                      })}
-                    >
-                      {mode.icon}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{mode.label}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            ))}
-          </div>
-          <div className="flex items-center space-x-2">
-            <Divider />
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="inline-flex select-none items-center space-x-1"
-                  disabled={!tabCaptureModes.includes(recordingMode)}
+                  onClick={onClose}
+                  className="rounded-full text-white/75 hover:bg-white/10 hover:text-white"
                 >
-                  <span>Options</span>
-                  <CaretDownIcon className="h-5 w-5" />
+                  <Cross2Icon className="h-4 w-4" />
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuPortal
-                // @ts-ignore
-                container={appRoot}
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Close</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <Divider />
+          {recordingModes.map((mode) => {
+            const isActive = mode.name === recordingMode
+            return (
+              <Button
+                key={mode.name}
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  useStore.setState({ recordingMode: mode.name })
+                }
+                className={clsx(
+                  'gap-1.5 rounded-full text-white/75 hover:bg-white/10 hover:text-white',
+                  isActive && 'bg-white/15 text-white [&_svg]:text-green-400 hover:bg-white/15'
+                )}
               >
-                <DropdownMenuContent
-                  className="z-[2147483647] w-52 rounded-md bg-background/60 backdrop-blur"
-                  sideOffset={10}
-                  side="top"
-                  onCloseAutoFocus={(e) => e.preventDefault()}
-                >
-                  {menuItems.map((item) => (
-                    <DropdownMenuCheckboxItem
-                      checked={item.checked}
-                      onCheckedChange={item.onCheckedChange}
-                      key={item.name}
-                    >
-                      {item.label}
-                    </DropdownMenuCheckboxItem>
-                  ))}
-                  <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>
-                      <div className="pl-6">Countdown</div>
-                    </DropdownMenuSubTrigger>
-                    <DropdownMenuPortal
-                      // @ts-ignore
-                      container={appRoot}
-                    >
-                      <DropdownMenuSubContent
-                        className="z-[2147483647] min-w-[5rem] rounded-md bg-background/60 tabular-nums backdrop-blur"
-                        sideOffset={4}
-                      >
-                        <DropdownMenuRadioGroup
-                          value={countdown.toString()}
-                          onValueChange={(value) =>
-                            useStore.setState({ countdown: parseInt(value) })
-                          }
-                        >
-                          {[0, 1, 3, 5, 7, 10].map((second) => (
-                            <DropdownMenuRadioItem
-                              key={`countdown-${second}`}
-                              value={second.toString()}
-                            >
-                              {second}s
-                            </DropdownMenuRadioItem>
-                          ))}
-                        </DropdownMenuRadioGroup>
-                      </DropdownMenuSubContent>
-                    </DropdownMenuPortal>
-                  </DropdownMenuSub>
-                </DropdownMenuContent>
-              </DropdownMenuPortal>
-            </DropdownMenu>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Divider />
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleStart}
-                    className="select-none"
+                {mode.icon}
+                <span className="text-xs font-medium">{mode.label}</span>
+              </Button>
+            )
+          })}
+          <Divider />
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1.5 rounded-full text-white/80 hover:bg-white/10 hover:text-white"
+                disabled={!tabCaptureModes.includes(recordingMode)}
+              >
+                <span>Options</span>
+                <CaretDownIcon className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuPortal container={appRoot}>
+              <DropdownMenuContent
+                className="z-[2147483647] w-52 rounded-xl border border-white/10 bg-neutral-900/80 backdrop-blur-md"
+                sideOffset={10}
+                side="top"
+                onCloseAutoFocus={(e) => e.preventDefault()}
+              >
+                {menuItems.map((item) => (
+                  <DropdownMenuCheckboxItem
+                    checked={item.checked}
+                    onCheckedChange={item.onCheckedChange}
+                    key={item.name}
+                    className="text-white/85 focus:bg-white/10 focus:text-white [&_.text-accent-foreground]:!text-white"
                   >
-                    Start
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Start Recording</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
+                    {item.label}
+                  </DropdownMenuCheckboxItem>
+                ))}
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className="text-white/85 focus:bg-white/10 focus:text-white data-[state=open]:bg-white/10 data-[state=open]:text-white">
+                    <div className="pl-6">Countdown</div>
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuPortal
+                    container={appRoot}
+                  >
+                    <DropdownMenuSubContent
+                      className="z-[2147483647] min-w-[5rem] rounded-xl border border-white/10 bg-neutral-900/80 tabular-nums backdrop-blur-md"
+                      sideOffset={4}
+                    >
+                      <DropdownMenuRadioGroup
+                        value={countdown.toString()}
+                        onValueChange={(value) => {
+                          const nextCountdown = Number.parseInt(value, 10)
+                          if (Number.isNaN(nextCountdown)) return
+
+                          useStore.setState({ countdown: nextCountdown })
+                        }}
+                      >
+                        {[0, 1, 3, 5, 7, 10].map((second) => (
+                          <DropdownMenuRadioItem
+                            key={`countdown-${second}`}
+                            value={second.toString()}
+                            className="text-white/85 focus:bg-white/10 focus:text-white"
+                          >
+                            {second}s
+                          </DropdownMenuRadioItem>
+                        ))}
+                      </DropdownMenuRadioGroup>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuPortal>
+                </DropdownMenuSub>
+              </DropdownMenuContent>
+            </DropdownMenuPortal>
+          </DropdownMenu>
+          <Divider />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleStart}
+            className="gap-1.5 rounded-full text-white/80 hover:bg-red-500/15 hover:text-white"
+          >
+            <span className="size-2 rounded-full bg-red-500" />
+            Start
+          </Button>
         </motion.div>
       </div>
     </Draggable>
@@ -305,5 +298,5 @@ export default function Controlbar({ appRoot, onClose }: ControlbarProps) {
 }
 
 function Divider() {
-  return <div className="h-2/3 border border-slate-950"></div>
+  return <div className="mx-1 h-6 border-l border-white/15" />
 }
