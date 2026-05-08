@@ -1,12 +1,13 @@
 import clsx from 'clsx'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { keyboardCodes } from '~/constants'
 import { useStore } from '~/entries/store'
 import { isMac, isWindows } from '~/lib/utils'
 
 const metaKey = isMac() ? '⌘' : isWindows() ? '⊞' : 'Meta'
 const MAX_VISIBLE = 8
+type StrokeKey = { id: number; code: string }
 
 export default function StrokeKeysDisplay() {
   const { recordingMode, area } = useStore((state) => ({
@@ -14,14 +15,18 @@ export default function StrokeKeysDisplay() {
     area: state.area,
   }))
 
-  const [strokeKeys, setStrokeKeys] = useState<string[]>([])
+  const [strokeKeys, setStrokeKeys] = useState<StrokeKey[]>([])
+  const nextStrokeKeyId = useRef(0)
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     setStrokeKeys((prevKeys) => {
-      if (prevKeys.includes(e.code)) {
+      if (prevKeys.some((key) => key.code === e.code)) {
         return prevKeys
       }
-      const next = [...prevKeys, e.code]
+      const next = [
+        ...prevKeys,
+        { id: nextStrokeKeyId.current++, code: e.code },
+      ]
       if (next.length > MAX_VISIBLE) {
         return next.slice(next.length - MAX_VISIBLE)
       }
@@ -30,7 +35,7 @@ export default function StrokeKeysDisplay() {
   }, [])
 
   const handleKeyUp = useCallback((e: KeyboardEvent) => {
-    setStrokeKeys((prevKeys) => prevKeys.filter((key) => key !== e.code))
+    setStrokeKeys((prevKeys) => prevKeys.filter((key) => key.code !== e.code))
   }, [])
 
   function handleFocus() {
@@ -66,20 +71,20 @@ export default function StrokeKeysDisplay() {
     >
       <div className="flex items-center space-x-2">
         <AnimatePresence>
-          {strokeKeys.map((strokeKey) => (
+          {strokeKeys.map(({ id, code }) => (
             <motion.kbd
-              key={strokeKey}
+              key={id}
               className={clsx(
                 'select-none rounded-lg border bg-background/30 px-4 py-2 text-3xl font-semibold text-foreground shadow-[0_2px_0px_1px_hsl(214.3_31.8%_91.4%)] backdrop-blur',
-                { 'h-[54px] w-48': strokeKey === 'Space' },
+                { 'h-[54px] w-48': code === 'Space' },
               )}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, transition: { delay: 0.5 } }}
             >
-              {strokeKey.startsWith('Meta')
+              {code.startsWith('Meta')
                 ? metaKey
-                : (keyboardCodes[strokeKey] ?? strokeKey)}
+                : (keyboardCodes[code] ?? code)}
             </motion.kbd>
           ))}
         </AnimatePresence>
