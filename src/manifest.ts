@@ -20,6 +20,7 @@ const manifest: Partial<chrome.runtime.ManifestV3> = {
   permissions: [
     'tabCapture',
     'activeTab',
+    'alarms',
     'offscreen',
     'storage',
     'desktopCapture',
