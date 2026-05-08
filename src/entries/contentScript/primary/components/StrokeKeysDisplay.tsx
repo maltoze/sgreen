@@ -18,6 +18,10 @@ export default function StrokeKeysDisplay() {
   const clearTimer = useRef<ReturnType<typeof setTimeout>>()
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.repeat) {
+      return
+    }
+
     clearTimeout(clearTimer.current)
     heldKeys.current.add(e.code)
     setStrokeKeys((prevKeys) => {
