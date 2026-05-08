@@ -31,7 +31,7 @@ let recordingTabId: number | null = null
 let resultTabId: number | null = null
 const enabledTabs = new Set<number>()
 const stopRecordingFallbackAlarmName = 'stop-recording-fallback'
-const stopRecordingFallbackDelayMs = 60 * 1000
+const stopRecordingFallbackDelayMs = 60000
 
 const SCRIPT_ACCESS_ERROR_MESSAGES = [
   'Cannot access a chrome-extension:// URL of different extension',
@@ -51,7 +51,7 @@ function isScriptAccessError(err: unknown) {
 function captureUnexpectedTabMessageError(err: unknown) {
   if (
     err instanceof Error &&
-    (isScriptAccessError(err) || err.message?.includes('No tab with id'))
+    (isScriptAccessError(err) || err.message.includes('No tab with id'))
   ) {
     return
   }
