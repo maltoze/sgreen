@@ -13,10 +13,12 @@ export default function StrokeKeysDisplay() {
   }))
 
   const [strokeKeys, setStrokeKeys] = useState<string[]>([])
-  const pendingRemoval = useRef<Set<string>>(new Set())
+  const heldKeys = useRef<Set<string>>(new Set())
+  const clearTimer = useRef<ReturnType<typeof setTimeout>>()
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    pendingRemoval.current.delete(e.code)
+    clearTimeout(clearTimer.current)
+    heldKeys.current.add(e.code)
     setStrokeKeys((prevKeys) => {
       if (prevKeys.includes(e.code)) {
         return prevKeys
@@ -27,18 +29,17 @@ export default function StrokeKeysDisplay() {
   }, [])
 
   const handleKeyUp = useCallback((e: KeyboardEvent) => {
-    const code = e.code
-    pendingRemoval.current.add(code)
-    setTimeout(() => {
-      if (pendingRemoval.current.has(code)) {
-        pendingRemoval.current.delete(code)
-        setStrokeKeys((prevKeys) => prevKeys.filter((key) => key !== code))
-      }
-    }, 500)
+    heldKeys.current.delete(e.code)
+    if (heldKeys.current.size === 0) {
+      clearTimer.current = setTimeout(() => {
+        setStrokeKeys([])
+      }, 500)
+    }
   }, [])
 
   function handleFocus() {
-    pendingRemoval.current.clear()
+    clearTimeout(clearTimer.current)
+    heldKeys.current.clear()
     setStrokeKeys([])
   }
 
@@ -47,6 +48,7 @@ export default function StrokeKeysDisplay() {
     window.addEventListener('keyup', handleKeyUp)
     window.addEventListener('focus', handleFocus)
     return () => {
+      clearTimeout(clearTimer.current)
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('keyup', handleKeyUp)
       window.removeEventListener('focus', handleFocus)
