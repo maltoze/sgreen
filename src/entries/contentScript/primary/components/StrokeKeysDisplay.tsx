@@ -7,6 +7,7 @@ import { isMac, isWindows } from '~/lib/utils'
 
 const metaKey = isMac() ? '⌘' : isWindows() ? '⊞' : 'Meta'
 const MAX_VISIBLE = 8
+const KEY_EXIT_DELAY_SECONDS = 0.5
 type StrokeKey = { id: number; code: string }
 
 export default function StrokeKeysDisplay() {
@@ -80,7 +81,10 @@ export default function StrokeKeysDisplay() {
               )}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
+              exit={{
+                opacity: 0,
+                transition: { delay: KEY_EXIT_DELAY_SECONDS },
+              }}
             >
               {code.startsWith('Meta')
                 ? metaKey
