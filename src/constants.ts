@@ -4,6 +4,7 @@ export const tabCaptureModes = ['tab', 'area']
 export const defaultRecordingMode = 'tab'
 
 export const keyboardCodes: { [key: string]: string } = {
+  Escape: 'Esc',
   Backquote: '`',
   Digit1: '1',
   Digit2: '2',
