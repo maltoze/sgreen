@@ -1,5 +1,4 @@
 import clsx from 'clsx'
-import { AnimatePresence, motion } from 'framer-motion'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { keyboardCodes } from '~/constants'
 import { useStore } from '~/entries/store'
@@ -7,8 +6,6 @@ import { isMac, isWindows } from '~/lib/utils'
 
 const metaKey = isMac() ? '⌘' : isWindows() ? '⊞' : 'Meta'
 const MAX_VISIBLE = 8
-const KEY_EXIT_DELAY_SECONDS = 0.5
-type StrokeKey = { id: number; code: string }
 
 export default function StrokeKeysDisplay() {
   const { recordingMode, area } = useStore((state) => ({
@@ -16,18 +13,18 @@ export default function StrokeKeysDisplay() {
     area: state.area,
   }))
 
-  const [strokeKeys, setStrokeKeys] = useState<StrokeKey[]>([])
-  const nextStrokeKeyId = useRef(0)
+  const [strokeKeys, setStrokeKeys] = useState<string[]>([])
+  const heldKeys = useRef<Set<string>>(new Set())
+  const clearTimer = useRef<ReturnType<typeof setTimeout>>()
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    clearTimeout(clearTimer.current)
+    heldKeys.current.add(e.code)
     setStrokeKeys((prevKeys) => {
-      if (prevKeys.some((key) => key.code === e.code)) {
+      if (prevKeys.includes(e.code)) {
         return prevKeys
       }
-      const next = [
-        ...prevKeys,
-        { id: nextStrokeKeyId.current++, code: e.code },
-      ]
+      const next = [...prevKeys, e.code]
       if (next.length > MAX_VISIBLE) {
         return next.slice(next.length - MAX_VISIBLE)
       }
@@ -36,10 +33,17 @@ export default function StrokeKeysDisplay() {
   }, [])
 
   const handleKeyUp = useCallback((e: KeyboardEvent) => {
-    setStrokeKeys((prevKeys) => prevKeys.filter((key) => key.code !== e.code))
+    heldKeys.current.delete(e.code)
+    if (heldKeys.current.size === 0) {
+      clearTimer.current = setTimeout(() => {
+        setStrokeKeys([])
+      }, 500)
+    }
   }, [])
 
   function handleFocus() {
+    clearTimeout(clearTimer.current)
+    heldKeys.current.clear()
     setStrokeKeys([])
   }
 
@@ -48,6 +52,7 @@ export default function StrokeKeysDisplay() {
     window.addEventListener('keyup', handleKeyUp)
     window.addEventListener('focus', handleFocus)
     return () => {
+      clearTimeout(clearTimer.current)
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('keyup', handleKeyUp)
       window.removeEventListener('focus', handleFocus)
@@ -70,29 +75,23 @@ export default function StrokeKeysDisplay() {
         left: recordingMode === 'area' ? area.x + area.width / 2 : undefined,
       }}
     >
-      <div className="flex items-center space-x-2">
-        <AnimatePresence>
-          {strokeKeys.map(({ id, code }) => (
-            <motion.kbd
-              key={id}
+      {strokeKeys.length > 0 && (
+        <div className="flex items-center space-x-2">
+          {strokeKeys.map((strokeKey, idx) => (
+            <kbd
+              key={`${strokeKey}-${idx}`}
               className={clsx(
                 'select-none rounded-lg border bg-background/30 px-4 py-2 text-3xl font-semibold text-foreground shadow-[0_2px_0px_1px_hsl(214.3_31.8%_91.4%)] backdrop-blur',
-                { 'h-[54px] w-48': code === 'Space' },
+                { 'h-[54px] w-48': strokeKey === 'Space' },
               )}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{
-                opacity: 0,
-                transition: { delay: KEY_EXIT_DELAY_SECONDS },
-              }}
             >
-              {code.startsWith('Meta')
+              {strokeKey.startsWith('Meta')
                 ? metaKey
-                : (keyboardCodes[code] ?? code)}
-            </motion.kbd>
+                : (keyboardCodes[strokeKey] ?? strokeKey)}
+            </kbd>
           ))}
-        </AnimatePresence>
-      </div>
+        </div>
+      )}
     </div>
   )
 }
