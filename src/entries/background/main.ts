@@ -31,7 +31,7 @@ let recordingTabId: number | null = null
 let resultTabId: number | null = null
 const enabledTabs = new Set<number>()
 const stopRecordingFallbackAlarmName = 'stop-recording-fallback'
-const stopRecordingFallbackDelayMs = 5 * 60 * 1000
+const stopRecordingFallbackDelayMs = 60 * 1000
 
 const SCRIPT_ACCESS_ERROR_MESSAGES = [
   'Cannot access a chrome-extension:// URL of different extension',
@@ -46,6 +46,16 @@ function isScriptAccessError(err: unknown) {
       err.message?.includes(message),
     )
   )
+}
+
+function captureUnexpectedTabMessageError(err: unknown) {
+  if (
+    err instanceof Error &&
+    (isScriptAccessError(err) || err.message?.includes('No tab with id'))
+  ) {
+    return
+  }
+  captureException(err)
 }
 
 async function updateActionState(tabId: number, url?: string) {
@@ -89,7 +99,7 @@ function resetRecordingState() {
   void chrome.alarms.clear(stopRecordingFallbackAlarmName)
   if (recordingTabId) {
     sendTabMessage(recordingTabId, { type: 'stop-recording' }).catch(
-      captureException,
+      captureUnexpectedTabMessageError,
     )
   }
   chrome.action.setBadgeText({ text: '' })
@@ -112,12 +122,12 @@ function stopRecording() {
   })
   recordingTabId &&
     sendTabMessage(recordingTabId, { type: 'stop-recording' }).catch(
-      captureException,
+      captureUnexpectedTabMessageError,
     )
   if (recordingMode === 'desktop') {
     resultTabId &&
       sendTabMessage(resultTabId, { type: 'stop-recording' }).catch(
-        captureException,
+        captureUnexpectedTabMessageError,
       )
   }
 }
