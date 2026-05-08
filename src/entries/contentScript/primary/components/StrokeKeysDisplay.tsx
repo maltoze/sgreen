@@ -60,30 +60,26 @@ export default function StrokeKeysDisplay() {
         left: recordingMode === 'area' ? area.x + area.width / 2 : undefined,
       }}
     >
-      <AnimatePresence>
-        {strokeKeys.length > 0 && (
-          <motion.div
-            className="flex items-center space-x-2"
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { delay: 0.3 } }}
-          >
-            {strokeKeys.map((strokeKey, idx) => (
-              <motion.kbd
-                key={`${strokeKey}-${idx}`}
-                className={clsx(
-                  'select-none rounded-lg border bg-background/30 px-4 py-2 text-3xl font-semibold text-foreground shadow-[0_2px_0px_1px_hsl(214.3_31.8%_91.4%)] backdrop-blur',
-                  { 'h-[54px] w-48': strokeKey === 'Space' },
-                )}
-                animate={{ opacity: 1 }}
-              >
-                {strokeKey.startsWith('Meta')
-                  ? metaKey
-                  : (keyboardCodes[strokeKey] ?? strokeKey)}
-              </motion.kbd>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <div className="flex items-center space-x-2">
+        <AnimatePresence>
+          {strokeKeys.map((strokeKey) => (
+            <motion.kbd
+              key={strokeKey}
+              className={clsx(
+                'select-none rounded-lg border bg-background/30 px-4 py-2 text-3xl font-semibold text-foreground shadow-[0_2px_0px_1px_hsl(214.3_31.8%_91.4%)] backdrop-blur',
+                { 'h-[54px] w-48': strokeKey === 'Space' },
+              )}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, transition: { delay: 0.5 } }}
+            >
+              {strokeKey.startsWith('Meta')
+                ? metaKey
+                : (keyboardCodes[strokeKey] ?? strokeKey)}
+            </motion.kbd>
+          ))}
+        </AnimatePresence>
+      </div>
     </div>
   )
 }
