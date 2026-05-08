@@ -29,6 +29,8 @@ let recordingMode: RecordingMode | null
 let recordingTabId: number | null = null
 let resultTabId: number | null = null
 const enabledTabs = new Set<number>()
+const stopRecordingFallbackAlarmName = 'stop-recording-fallback'
+const stopRecordingFallbackDelayMs = 60000
 
 const SCRIPT_ACCESS_ERROR_MESSAGES = [
   'Cannot access a chrome-extension:// URL of different extension',
@@ -43,6 +45,16 @@ function isScriptAccessError(err: unknown) {
       err.message?.includes(message),
     )
   )
+}
+
+function captureUnexpectedTabMessageError(err: unknown) {
+  if (
+    err instanceof Error &&
+    (isScriptAccessError(err) || err.message.includes('No tab with id'))
+  ) {
+    return
+  }
+  captureException(err)
 }
 
 async function updateActionState(tabId: number, url?: string) {
@@ -83,8 +95,11 @@ async function executeContentScript(tabId: number) {
 }
 
 function resetRecordingState() {
+  void chrome.alarms.clear(stopRecordingFallbackAlarmName)
   if (recordingTabId) {
-    sendTabMessage(recordingTabId, { type: 'stop-recording' })
+    sendTabMessage(recordingTabId, { type: 'stop-recording' }).catch(
+      captureUnexpectedTabMessageError,
+    )
   }
   chrome.action.setBadgeText({ text: '' })
   useStore.setState({ isRecording: false })
@@ -104,11 +119,31 @@ function stopRecording() {
     type: 'stop-recording',
     target: 'offscreen',
   })
-  recordingTabId && sendTabMessage(recordingTabId, { type: 'stop-recording' })
+  recordingTabId &&
+    sendTabMessage(recordingTabId, { type: 'stop-recording' }).catch(
+      captureUnexpectedTabMessageError,
+    )
   if (recordingMode === 'desktop') {
-    resultTabId && sendTabMessage(resultTabId, { type: 'stop-recording' })
+    resultTabId &&
+      sendTabMessage(resultTabId, { type: 'stop-recording' }).catch(
+        captureUnexpectedTabMessageError,
+      )
   }
 }
+
+function stopRecordingWithFallback() {
+  stopRecording()
+
+  void chrome.alarms.create(stopRecordingFallbackAlarmName, {
+    when: Date.now() + stopRecordingFallbackDelayMs,
+  })
+}
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === stopRecordingFallbackAlarmName && isRecording) {
+    resetRecordingState()
+  }
+})
 
 chrome.tabs.onActivated.addListener(({ tabId }) => {
   chrome.tabs
@@ -144,7 +179,8 @@ chrome.tabs.onRemoved.addListener((tabId) => {
     }
   }
   if (tabId === recordingTabId && isRecording) {
-    resetRecordingState()
+    recordingTabId = null
+    stopRecordingWithFallback()
   }
 })
 
@@ -152,7 +188,7 @@ chrome.action.onClicked.addListener(async (tab) => {
   if (!tab.id) return
 
   if (isRecording) {
-    stopRecording()
+    stopRecordingWithFallback()
   } else {
     if (!isScriptableUrl(tab.url)) {
       enabledTabs.delete(tab.id)
@@ -217,6 +253,7 @@ chrome.runtime.onMessage.addListener(
     }
     switch (message.type) {
       case 'recording-complete':
+        void chrome.alarms.clear(stopRecordingFallbackAlarmName)
         if (recordingMode === 'desktop') {
           if (resultTabId) {
             await chrome.tabs.update(resultTabId, { active: true })

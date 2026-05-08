@@ -167,12 +167,17 @@ class Recorder {
     this.recorder.onerror = (event) => {
       console.error('MediaRecorder error:', event)
     }
+    this.media.getTracks().forEach((track) => {
+      track.addEventListener('ended', () => this.stop(), { once: true })
+    })
     this.recorder.start()
     this.startTime = Date.now()
   }
 
   public async stop() {
-    this.recorder?.stop()
+    if (this.recorder && this.recorder.state !== 'inactive') {
+      this.recorder.stop()
+    }
     this.recorder?.stream.getTracks().forEach((t) => t.stop())
     this.media?.getTracks().forEach((t) => t.stop())
     this.drawTimerId && clearTimeout(this.drawTimerId)
