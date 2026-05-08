@@ -5,7 +5,7 @@ import { useStore } from '~/entries/store'
 import { isMac, isWindows } from '~/lib/utils'
 
 const metaKey = isMac() ? '⌘' : isWindows() ? '⊞' : 'Meta'
-const MAX_VISIBLE = 5
+const MAX_VISIBLE = 8
 
 export default function StrokeKeysDisplay() {
   const { recordingMode, area } = useStore((state) => ({
