@@ -2,7 +2,7 @@
 
 Sgreen is a Chrome extension that allows you to record your screen with ease.
 
-![Frame 4](https://github.com/maltoze/sgreen/assets/18044730/b89d688d-a228-4509-836b-63ae0f23a518)
+![promo](./assets/cws-marquee-promo-1400x560.png)
 
 ## Features
 

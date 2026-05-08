@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sgreen Chrome Web Store Assets</title>
+    <style>
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        overflow: hidden;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #111a16;
+      }
+      body {
+        background:
+          radial-gradient(circle at 10% 18%, rgba(34, 197, 94, .22), transparent 28%),
+          radial-gradient(circle at 96% 0%, rgba(59, 130, 246, .14), transparent 24%),
+          linear-gradient(135deg, #f8fbf9, #eef8f2 50%, #f8fafc);
+      }
+      .wrap { position: relative; width: 100%; height: 100%; }
+      .brand { display: flex; align-items: center; gap: var(--brand-gap); }
+      .brand img { width: var(--logo); height: var(--logo); border-radius: calc(var(--logo) * .23); }
+      h1 { margin: 0; font-size: var(--h1); line-height: .95; letter-spacing: 0; font-weight: 820; }
+      .sub { margin: var(--sub-top) 0 0; width: var(--sub-w); font-size: var(--sub); line-height: 1.18; font-weight: 650; color: #3d5447; }
+      .chips { display: grid; grid-template-columns: repeat(var(--chip-cols), var(--chip-w)); gap: var(--chip-gap); margin-top: var(--chips-top); }
+      .chip {
+        height: var(--chip-h);
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        background: rgba(255, 255, 255, .86);
+        box-shadow: 0 12px 28px rgba(15, 23, 42, .08);
+        font-size: var(--chip-font);
+        font-weight: 760;
+      }
+      .dot { width: 10px; height: 10px; border-radius: 50%; background: #22c55e; }
+      .chip:nth-child(2) .dot, .chip:nth-child(5) .dot { background: #3b82f6; }
+      .chip:nth-child(3) .dot, .chip:nth-child(6) .dot { background: #f59e0b; }
+      .browser {
+        position: absolute;
+        border-radius: 14px;
+        overflow: hidden;
+        background: #fff;
+        border: 1px solid rgba(15, 23, 42, .1);
+        box-shadow: 0 34px 92px rgba(15, 23, 42, .22), 0 8px 26px rgba(15, 23, 42, .1);
+      }
+      .topbar { height: var(--bar-h); display: flex; align-items: center; gap: 14px; padding: 0 18px; background: #f3f4f6; border-bottom: 1px solid #e5e7eb; }
+      .lights { display: flex; gap: 8px; }
+      .lights span { width: 12px; height: 12px; border-radius: 50%; background: #c8ced6; }
+      .address { flex: 1; height: 28px; border-radius: 999px; background: #fff; border: 1px solid #e5e7eb; }
+      .page {
+        position: relative;
+        height: calc(100% - var(--bar-h));
+        padding: var(--page-pad);
+        background:
+          linear-gradient(90deg, rgba(34, 197, 94, .08) 0 1px, transparent 1px),
+          linear-gradient(0deg, rgba(15, 23, 42, .045) 0 1px, transparent 1px),
+          #fff;
+        background-size: var(--grid) var(--grid);
+      }
+      .title-line { width: var(--title-w); height: var(--title-h); border-radius: 999px; background: #13241a; }
+      .line { height: var(--line-h); border-radius: 999px; background: #dbe7de; margin-top: var(--line-gap); }
+      .line.a { width: var(--line-a); }
+      .line.b { width: var(--line-b); }
+      .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 36px; }
+      .card { height: 148px; border-radius: 8px; border: 1px solid #e6ede8; background: rgba(255, 255, 255, .82); }
+      .selection {
+        position: absolute;
+        left: var(--sel-x);
+        top: var(--sel-y);
+        width: var(--sel-w);
+        height: var(--sel-h);
+        border: 3px solid #22c55e;
+        background: rgba(34, 197, 94, .08);
+      }
+      .handle { position: absolute; width: 12px; height: 12px; border-radius: 3px; background: #22c55e; border: 2px solid #fff; }
+      .tl { left: -7px; top: -7px; }
+      .tr { right: -7px; top: -7px; }
+      .bl { left: -7px; bottom: -7px; }
+      .br { right: -7px; bottom: -7px; }
+      .controlbar {
+        position: absolute;
+        left: 50%;
+        bottom: var(--control-bottom);
+        width: var(--control-w);
+        transform: translateX(-50%);
+      }
+      .accent { position: absolute; left: var(--pad-x); bottom: var(--accent-bottom); width: var(--accent-w); height: 8px; border-radius: 999px; background: linear-gradient(90deg, #22c55e, #3b82f6, #f59e0b); }
+
+      body.screenshot {
+        width: 1280px; height: 800px;
+        --pad-x: 78px; --pad-y: 70px; --brand-gap: 18px; --logo: 72px; --h1: 76px;
+        --sub-top: 17px; --sub: 31px; --sub-w: auto; --chips-top: 36px;
+        --chip-cols: 3; --chip-w: 96px; --chip-h: 44px; --chip-gap: 12px; --chip-font: 18px;
+        --accent-bottom: 72px; --accent-w: 262px; --bar-h: 56px; --page-pad: 38px 44px; --grid: 38px;
+        --title-w: 330px; --title-h: 26px; --line-h: 14px; --line-gap: 18px; --line-a: 480px; --line-b: 390px;
+        --sel-x: 76px; --sel-y: 118px; --sel-w: 520px; --sel-h: 282px; --control-w: 560px; --control-bottom: 94px;
+      }
+      body.screenshot .wrap { padding: var(--pad-y) var(--pad-x); }
+      body.screenshot .browser { right: 70px; bottom: 64px; width: 760px; height: 535px; }
+
+      body.small {
+        width: 440px; height: 280px;
+        --pad-x: 32px; --brand-gap: 14px; --logo: 58px; --h1: 48px;
+        --sub-top: 12px; --sub: 21px; --sub-w: 148px; --chips-top: 24px;
+        --chip-cols: 2; --chip-w: 72px; --chip-h: 31px; --chip-gap: 8px; --chip-font: 14px;
+        --bar-h: 28px; --page-pad: 22px 24px; --grid: 30px;
+        --title-w: 122px; --title-h: 13px; --line-h: 8px; --line-gap: 10px; --line-a: 170px; --line-b: 128px;
+        --sel-x: 26px; --sel-y: 54px; --sel-w: 204px; --sel-h: 60px; --control-w: 214px; --control-bottom: 40px;
+      }
+      body.small .wrap { padding: 28px var(--pad-x); }
+      body.small .browser { right: 8px; bottom: 18px; width: 240px; height: 128px; }
+      body.small .chips, body.small .cards, body.small .line.b { display: none; }
+      body.small .address { max-width: 114px; height: 18px; }
+
+      body.marquee {
+        width: 1400px; height: 560px;
+        --pad-x: 78px; --brand-gap: 20px; --logo: 86px; --h1: 88px;
+        --sub-top: 18px; --sub: 34px; --sub-w: auto; --chips-top: 34px;
+        --chip-cols: 3; --chip-w: 126px; --chip-h: 48px; --chip-gap: 14px; --chip-font: 18px;
+        --accent-bottom: 56px; --accent-w: 292px; --bar-h: 52px; --page-pad: 34px 42px; --grid: 36px;
+        --title-w: 300px; --title-h: 24px; --line-h: 13px; --line-gap: 16px; --line-a: 450px; --line-b: 350px;
+        --sel-x: 78px; --sel-y: 104px; --sel-w: 494px; --sel-h: 206px; --control-w: 520px; --control-bottom: 72px;
+      }
+      body.marquee .wrap { padding: 68px var(--pad-x); }
+      body.marquee .browser { right: 74px; top: 70px; width: 720px; height: 420px; }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <section>
+        <div class="brand"><img src="../public/icon.png" alt="" /><h1>Sgreen</h1></div>
+        <p class="sub">Record smarter in Chrome</p>
+        <div class="chips">
+          <div class="chip"><span class="dot"></span>Area</div><div class="chip"><span class="dot"></span>Tab</div><div class="chip"><span class="dot"></span>Desktop</div>
+          <div class="chip"><span class="dot"></span>Mic</div><div class="chip"><span class="dot"></span>Keys</div><div class="chip"><span class="dot"></span>Clicks</div>
+        </div>
+      </section>
+      <div class="browser">
+        <div class="topbar"><div class="lights"><span></span><span></span><span></span></div><div class="address"></div></div>
+        <div class="page">
+          <div class="title-line"></div><div class="line a"></div><div class="line b"></div>
+          <div class="cards"><div class="card"></div><div class="card"></div><div class="card"></div></div>
+          <div class="selection"><span class="handle tl"></span><span class="handle tr"></span><span class="handle bl"></span><span class="handle br"></span></div>
+          <img class="controlbar" src="file:///Users/gaoyadong/Downloads/localhost_6006__path=_story_entries-contentscript-primary-components-controlbar--controlbar-story%201.png" alt="" />
+        </div>
+      </div>
+      <div class="accent"></div>
+    </main>
+    <script>
+      document.body.className = new URLSearchParams(location.search).get("v") || "screenshot"
+    </script>
+  </body>
+</html>
