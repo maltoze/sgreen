@@ -29,9 +29,9 @@ let isRecording = false
 let recordingMode: RecordingMode | null
 let recordingTabId: number | null = null
 let resultTabId: number | null = null
-let stopRecordingFallbackTimer: ReturnType<typeof setTimeout> | null = null
 const enabledTabs = new Set<number>()
-const stopRecordingFallbackDelay = 3000
+const stopRecordingFallbackAlarmName = 'stop-recording-fallback'
+const stopRecordingFallbackDelay = 5 * 60 * 1000
 
 const SCRIPT_ACCESS_ERROR_MESSAGES = [
   'Cannot access a chrome-extension:// URL of different extension',
@@ -86,12 +86,11 @@ async function executeContentScript(tabId: number) {
 }
 
 function resetRecordingState() {
-  if (stopRecordingFallbackTimer) {
-    clearTimeout(stopRecordingFallbackTimer)
-    stopRecordingFallbackTimer = null
-  }
+  void chrome.alarms.clear(stopRecordingFallbackAlarmName)
   if (recordingTabId) {
-    sendTabMessage(recordingTabId, { type: 'stop-recording' }).catch(() => {})
+    void sendTabMessage(recordingTabId, { type: 'stop-recording' }).catch(
+      captureException,
+    )
   }
   chrome.action.setBadgeText({ text: '' })
   useStore.setState({ isRecording: false })
@@ -112,23 +111,30 @@ function stopRecording() {
     target: 'offscreen',
   })
   recordingTabId &&
-    sendTabMessage(recordingTabId, { type: 'stop-recording' }).catch(() => {})
+    void sendTabMessage(recordingTabId, { type: 'stop-recording' }).catch(
+      captureException,
+    )
   if (recordingMode === 'desktop') {
     resultTabId &&
-      sendTabMessage(resultTabId, { type: 'stop-recording' }).catch(() => {})
+      void sendTabMessage(resultTabId, { type: 'stop-recording' }).catch(
+        captureException,
+      )
   }
 }
 
 function stopRecordingWithFallback() {
   stopRecording()
 
-  if (stopRecordingFallbackTimer) {
-    clearTimeout(stopRecordingFallbackTimer)
-  }
-  stopRecordingFallbackTimer = setTimeout(() => {
-    resetRecordingState()
-  }, stopRecordingFallbackDelay)
+  void chrome.alarms.create(stopRecordingFallbackAlarmName, {
+    when: Date.now() + stopRecordingFallbackDelay,
+  })
 }
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === stopRecordingFallbackAlarmName && isRecording) {
+    resetRecordingState()
+  }
+})
 
 chrome.tabs.onActivated.addListener(({ tabId }) => {
   chrome.tabs
@@ -238,10 +244,7 @@ chrome.runtime.onMessage.addListener(
     }
     switch (message.type) {
       case 'recording-complete':
-        if (stopRecordingFallbackTimer) {
-          clearTimeout(stopRecordingFallbackTimer)
-          stopRecordingFallbackTimer = null
-        }
+        void chrome.alarms.clear(stopRecordingFallbackAlarmName)
         if (recordingMode === 'desktop') {
           if (resultTabId) {
             await chrome.tabs.update(resultTabId, { active: true })
