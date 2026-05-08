@@ -26,7 +26,6 @@ const persistKeys = [
   'scrollbarHidden',
   'showKeystrokes',
   'audio',
-  'isRecording',
   'countdown',
   'showMouseClicks',
   'recordingMode',
@@ -59,6 +58,16 @@ export const useStore = create<IState>()(
         Object.fromEntries(
           Object.entries(state).filter(([key]) => persistKeys.includes(key)),
         ),
+      merge: (persistedState, currentState) => {
+        const {
+          isRecording: _isRecording,
+          showControlbar: _showControlbar,
+          showCountdown: _showCountdown,
+          ...persistedPreferences
+        } = (persistedState ?? {}) as Partial<IState>
+
+        return { ...currentState, ...persistedPreferences }
+      },
     },
   ),
 )

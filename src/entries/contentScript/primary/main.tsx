@@ -21,7 +21,11 @@ if (import.meta.env.MODE === 'production') {
 chrome.runtime.onMessage.addListener((message, _sener, _sendResponse) => {
   switch (message.type) {
     case 'show-controlbar':
-      useStore.setState({ showControlbar: true })
+      useStore.setState({
+        isRecording: false,
+        showCountdown: false,
+        showControlbar: true,
+      })
       break
     case 'stop-recording':
       useStore.setState({ isRecording: false })
