@@ -5,6 +5,7 @@ import { useStore } from '~/entries/store'
 import { isMac, isWindows } from '~/lib/utils'
 
 const metaKey = isMac() ? '⌘' : isWindows() ? '⊞' : 'Meta'
+const MAX_VISIBLE = 5
 
 export default function StrokeKeysDisplay() {
   const { recordingMode, area } = useStore((state) => ({
@@ -22,9 +23,12 @@ export default function StrokeKeysDisplay() {
     setStrokeKeys((prevKeys) => {
       if (prevKeys.includes(e.code)) {
         return prevKeys
-      } else {
-        return [...prevKeys, e.code]
       }
+      const next = [...prevKeys, e.code]
+      if (next.length > MAX_VISIBLE) {
+        return next.slice(next.length - MAX_VISIBLE)
+      }
+      return next
     })
   }, [])
 
