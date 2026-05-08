@@ -21,9 +21,6 @@ export default function StrokeKeysDisplay() {
     clearTimeout(clearTimer.current)
     heldKeys.current.add(e.code)
     setStrokeKeys((prevKeys) => {
-      if (prevKeys.includes(e.code)) {
-        return prevKeys
-      }
       const next = [...prevKeys, e.code]
       if (next.length > MAX_VISIBLE) {
         return next.slice(next.length - MAX_VISIBLE)
